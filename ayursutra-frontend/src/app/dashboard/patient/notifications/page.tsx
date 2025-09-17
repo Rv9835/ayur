@@ -30,8 +30,8 @@ export default function PatientNotificationsPage() {
       const data = await getPatientNotifications(user.uid, token);
       setPre(data.pre || []);
       setPost(data.post || []);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load notifications");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load notifications");
     } finally {
       setLoading(false);
     }

@@ -73,9 +73,9 @@ export default function PatientFeedbackPage() {
     try {
       const list = await getPatientAppointments(user.uid, token);
       setAppointments(Array.isArray(list) ? list : []);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load sessions");
-      toast.error(err?.message || "Failed to load sessions");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load sessions");
+      toast.error((err as Error)?.message || "Failed to load sessions");
     } finally {
       setLoading(false);
     }
@@ -107,8 +107,8 @@ export default function PatientFeedbackPage() {
       toast.success("Feedback saved");
       setSelected(null);
       await loadAppointments();
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to save feedback");
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to save feedback");
     } finally {
       setSubmitting(false);
     }

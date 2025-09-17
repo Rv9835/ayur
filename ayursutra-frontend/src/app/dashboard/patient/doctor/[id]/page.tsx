@@ -124,8 +124,8 @@ export default function DoctorProfilePage() {
     async function load() {
       try {
         if (!doctorId) return;
-        let doc: any = null;
-        let rev: any[] = [];
+        let doc: Record<string, unknown> | null = null;
+        let rev: Record<string, unknown>[] = [];
         // Prefer allowed list then fallback to search; avoid restricted /users/:id
         try {
           const { getDoctors } = await import("@/lib/api");
@@ -133,7 +133,7 @@ export default function DoctorProfilePage() {
             token && token.includes(".") ? token : patientId || token || "";
           const list = await getDoctors(authHeader);
           doc =
-            (list || []).find((d: any) => (d._id || d.id) === doctorId) || null;
+            (list || []).find((d: Record<string, unknown>) => (d._id || d.id) === doctorId) || null;
         } catch {}
         if (!doc) {
           try {
@@ -148,7 +148,7 @@ export default function DoctorProfilePage() {
               patientId
             );
             doc =
-              (results || []).find((d: any) => (d._id || d.id) === doctorId) ||
+              (results || []).find((d: Record<string, unknown>) => (d._id || d.id) === doctorId) ||
               (results || [])[0] ||
               null;
           } catch {}
@@ -163,7 +163,7 @@ export default function DoctorProfilePage() {
           const { getTherapies } = await import("@/lib/api");
           const therapies = await getTherapies(token || "");
           const match = Array.isArray(therapies)
-            ? therapies.find((t: any) =>
+            ? therapies.find((t: Record<string, unknown>) =>
                 (t.name || "")
                   .toLowerCase()
                   .includes(
@@ -262,10 +262,10 @@ export default function DoctorProfilePage() {
       console.log("Creating appointment with payload:", payload);
       await createAppointment(payload, token || "");
       router.push("/dashboard/patient/schedule");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to create appointment:", err);
       if (typeof window !== "undefined") {
-        alert(err?.message || "Failed to create appointment");
+        alert((err as Error)?.message || "Failed to create appointment");
       }
     }
   };

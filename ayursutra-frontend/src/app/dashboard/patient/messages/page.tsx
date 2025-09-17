@@ -18,10 +18,10 @@ import {
 export default function PatientMessagesPage() {
   const { user, token } = useAuth();
   const [threads, setThreads] = useState<
-    Array<{ chatId: string; doctor: any }>
+    Array<{ chatId: string; doctor: Record<string, unknown> }>
   >([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<any>>([]);
+  const [messages, setMessages] = useState<Array<Record<string, unknown>>>([]);
   const [loadingThreads, setLoadingThreads] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,8 +46,8 @@ export default function PatientMessagesPage() {
       const list = await listMessageThreads(user.uid, token);
       setThreads(list);
       if (!activeChatId && list.length > 0) setActiveChatId(list[0].chatId);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load threads");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load threads");
     } finally {
       setLoadingThreads(false);
     }
@@ -61,8 +61,8 @@ export default function PatientMessagesPage() {
       const res = await listChatMessages(chatId, token, user.uid);
       setMessages(res.messages || []);
       setTimeout(scrollToBottom, 0);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load messages");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load messages");
     } finally {
       setLoadingMessages(false);
     }
@@ -85,8 +85,8 @@ export default function PatientMessagesPage() {
       setText("");
       setAttachmentUrl("");
       setTimeout(scrollToBottom, 0);
-    } catch (err: any) {
-      setError(err?.message || "Failed to send message");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to send message");
     }
   }
 

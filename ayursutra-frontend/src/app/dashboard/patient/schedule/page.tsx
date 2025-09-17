@@ -201,8 +201,8 @@ export default function PatientSchedulePage() {
       }
       setIsChatOpen(true);
       setTimeout(scrollChatToBottom, 0);
-    } catch (err: any) {
-      setChatError(err?.message || "Failed to open chat");
+    } catch (err: unknown) {
+      setChatError((err as Error)?.message || "Failed to open chat");
       setIsChatOpen(true);
     } finally {
       setChatLoading(false);
@@ -226,8 +226,8 @@ export default function PatientSchedulePage() {
       setChatText("");
       setChatAttachmentUrl("");
       setTimeout(scrollChatToBottom, 0);
-    } catch (err: any) {
-      setChatError(err?.message || "Failed to send message");
+    } catch (err: unknown) {
+      setChatError((err as Error)?.message || "Failed to send message");
     }
   }
 
@@ -249,7 +249,7 @@ export default function PatientSchedulePage() {
 
         // Transform API data to match our interface
         const transformedAppointments = (appointmentsData || []).map(
-          (apt: any) => {
+          (apt: Record<string, unknown>) => {
             const doctor = apt?.doctor || {};
             const therapy = apt?.therapy || {};
             return {
@@ -292,14 +292,14 @@ export default function PatientSchedulePage() {
           }
         );
 
-        const transformedDoctors = (doctorsData || []).map((doc: any) => ({
+        const transformedDoctors = (doctorsData || []).map((doc: Record<string, unknown>) => ({
           id: doc?._id || doc?.id,
           name: doc?.name || doc?.displayName || doc?.email || "Doctor",
           specialty: doc?.specialty || "Ayurvedic Specialist",
           avatar: doc?.avatar || undefined,
         }));
 
-        const transformedTherapies = therapiesData.map((therapy: any) => ({
+        const transformedTherapies = therapiesData.map((therapy: Record<string, unknown>) => ({
           id: therapy._id,
           name: therapy.name,
           description: therapy.description || "",
@@ -309,7 +309,7 @@ export default function PatientSchedulePage() {
         setAppointments(transformedAppointments);
         setDoctors(transformedDoctors);
         setTherapies(transformedTherapies);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error loading data:", err);
         setError("Failed to load schedule data. Please try again.");
       } finally {
@@ -386,7 +386,7 @@ export default function PatientSchedulePage() {
       const amount = Math.max(300, Math.round((mins / 60) * 800));
       setPaymentAmount(amount);
       setIsPaymentOpen(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error booking appointment:", err);
       setError(err.message || "Failed to book appointment");
     }
@@ -466,8 +466,8 @@ export default function PatientSchedulePage() {
         notes: "",
       });
       toast.success("Payment successful. Appointment booked.");
-    } catch (e: any) {
-      toast.error(e?.message || "Payment failed");
+    } catch (e: unknown) {
+      toast.error((e as Error)?.message || "Payment failed");
     } finally {
       setProcessingPayment(false);
     }
@@ -486,7 +486,7 @@ export default function PatientSchedulePage() {
         )
       );
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error cancelling appointment:", err);
       setError(err.message || "Failed to cancel appointment");
     }
