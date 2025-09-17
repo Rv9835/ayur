@@ -60,17 +60,43 @@ export default function AIChatbot() {
     setInputText("");
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
+    try {
+      const sysPrompt = `You are AyurSutra's assistant. Use project context: roles (patient/doctor/admin), scheduling, therapies, approvals, notifications, SSE updates, and payments. Be concise and helpful.`;
+      const resp = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: sysPrompt,
+          messages: [
+            ...messages.map((m) => ({
+              role: m.sender === "user" ? "user" : "assistant",
+              content: m.text,
+            })),
+            { role: "user", content: userMessage.text },
+          ],
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+      const data = await resp.json();
+      const aiText = data?.text || "Sorry, I couldn't generate a response.";
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: mockResponses[Math.floor(Math.random() * mockResponses.length)],
+        text: aiText,
         sender: "bot",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botResponse]);
+    } catch (e) {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm having trouble reaching the AI service right now.",
+        sender: "bot",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

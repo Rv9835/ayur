@@ -89,3 +89,23 @@ The backend includes a Postman collection (`AyurSutra.postman_collection.json`) 
 
 - Update CORS_ORIGIN to match your frontend URL
 - Ensure the frontend is making requests to the correct backend URL
+
+## Deploying the Backend to Vercel
+
+1. Ensure these environment variables are configured in Vercel Project Settings → Environment Variables:
+
+   - `MONGO_URI`: your MongoDB connection string
+   - `JWT_SECRET`: secret for app JWTs
+   - `CORS_ORIGIN`: frontend origin (e.g., https://your-frontend.vercel.app)
+   - Optionally: `NEXT_PUBLIC_APP_ORIGIN` matching your frontend origin
+
+2. Project structure uses a serverless handler at `api/index.ts` via `serverless-http`.
+
+   - All routes `/api/*` and `/health` are routed to this function by `vercel.json`.
+
+3. After deployment, set the frontend env var to point to the backend base URL:
+
+   - In frontend: `NEXT_PUBLIC_API_BASE=https://<your-backend>.vercel.app`
+
+4. Local dev remains unchanged:
+   - `npm run dev` starts Express on `http://localhost:4000`.
