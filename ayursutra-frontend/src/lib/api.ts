@@ -468,7 +468,7 @@ export async function deleteUserAdmin(id: string, token: string) {
 export async function getCurrentUser(token: string) {
   const apiBase =
     process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
-  
+
   try {
     const res = await fetch(`${apiBase}/api/users/me`, {
       headers: {
@@ -477,29 +477,36 @@ export async function getCurrentUser(token: string) {
       },
       signal: AbortSignal.timeout(10000),
     });
-    
+
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return a demo user for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning demo user for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning demo user for demo mode"
+        );
         return {
           _id: "demo-user-123",
           displayName: "Demo User",
           email: "demo@example.com",
-          role: "patient"
+          role: "patient",
         };
       }
-      
-      throw new Error(`Failed to fetch current user: ${res.status} - ${errorText}`);
+
+      throw new Error(
+        `Failed to fetch current user: ${res.status} - ${errorText}`
+      );
     }
-    
+
     return res.json();
   } catch (error: unknown) {
     console.error("Error fetching current user:", error);
-    
+
     // Return demo user for demo mode when backend is down
     if (
       error.message?.includes("Failed to fetch") ||
@@ -510,10 +517,10 @@ export async function getCurrentUser(token: string) {
         _id: "demo-user-123",
         displayName: "Demo User",
         email: "demo@example.com",
-        role: "patient"
+        role: "patient",
       };
     }
-    
+
     throw error;
   }
 }
@@ -1039,24 +1046,29 @@ export async function listChatMessages(
         signal: AbortSignal.timeout(10000),
       }
     );
-    
+
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return empty messages for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning empty messages for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning empty messages for demo mode"
+        );
         return {
           chatId,
           participants: [],
-          messages: []
+          messages: [],
         };
       }
-      
+
       throw new Error(`Failed to load messages: ${res.status} - ${errorText}`);
     }
-    
+
     return res.json() as Promise<{
       chatId: string;
       participants: Record<string, unknown>[];
@@ -1064,20 +1076,22 @@ export async function listChatMessages(
     }>;
   } catch (error: unknown) {
     console.error("Error loading chat messages:", error);
-    
+
     // Return empty messages for demo mode when backend is down
     if (
       error.message?.includes("Failed to fetch") ||
       error.message?.includes("500")
     ) {
-      console.warn("Backend unavailable, returning empty messages for demo mode");
+      console.warn(
+        "Backend unavailable, returning empty messages for demo mode"
+      );
       return {
         chatId,
         participants: [],
-        messages: []
+        messages: [],
       };
     }
-    
+
     throw error;
   }
 }
@@ -1106,36 +1120,43 @@ export async function sendChatMessage(
         signal: AbortSignal.timeout(10000),
       }
     );
-    
+
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return a mock response for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning mock message for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning mock message for demo mode"
+        );
         return {
           chatId,
-          messages: [{
-            _id: `demo-msg-${Date.now()}`,
-            text: data.text || "Demo message",
-            senderId: data.senderId,
-            createdAt: new Date().toISOString(),
-            isDemo: true
-          }]
+          messages: [
+            {
+              _id: `demo-msg-${Date.now()}`,
+              text: data.text || "Demo message",
+              senderId: data.senderId,
+              createdAt: new Date().toISOString(),
+              isDemo: true,
+            },
+          ],
         };
       }
-      
+
       throw new Error(`Failed to send message: ${res.status} - ${errorText}`);
     }
-    
+
     return res.json() as Promise<{
       chatId: string;
       messages: Record<string, unknown>[];
     }>;
   } catch (error: unknown) {
     console.error("Error sending message:", error);
-    
+
     // Return mock response for demo mode when backend is down
     if (
       error.message?.includes("Failed to fetch") ||
@@ -1144,16 +1165,18 @@ export async function sendChatMessage(
       console.warn("Backend unavailable, returning mock message for demo mode");
       return {
         chatId,
-        messages: [{
-          _id: `demo-msg-${Date.now()}`,
-          text: data.text || "Demo message",
-          senderId: data.senderId,
-          createdAt: new Date().toISOString(),
-          isDemo: true
-        }]
+        messages: [
+          {
+            _id: `demo-msg-${Date.now()}`,
+            text: data.text || "Demo message",
+            senderId: data.senderId,
+            createdAt: new Date().toISOString(),
+            isDemo: true,
+          },
+        ],
       };
     }
-    
+
     throw error;
   }
 }
