@@ -3,7 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import routes from "./routes";
-import { connectWithRetry, getConnectionStatus } from "./config/mongodb-fallback";
+import {
+  connectWithRetry,
+  getConnectionStatus,
+} from "./config/mongodb-fallback";
 
 dotenv.config();
 
@@ -41,7 +44,7 @@ export function createApp() {
 
   const resolvedMongoUri =
     process.env.MONGO_URI ||
-    "mongodb+srv://prince844121_db_user:.Chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    "";
 
   // Track last connection error for diagnostics
   let lastMongoError: string | null = null;
@@ -119,10 +122,9 @@ export function createApp() {
       mongoUriHost: (() => {
         try {
           const uri = new URL(
-            resolvedMongoUri.replace("mongodb+srv://", "https://").replace(
-              "mongodb://",
-              "http://"
-            )
+            resolvedMongoUri
+              .replace("mongodb+srv://", "https://")
+              .replace("mongodb://", "http://")
           );
           return uri.hostname || null;
         } catch {
