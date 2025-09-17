@@ -7,6 +7,7 @@ export interface IUser extends Document {
     role: UserRole;
     specialty?: string;
     avatar?: string;
+    isApproved?: boolean;
 }
 export declare const User: import("mongoose").Model<IUser, {}, {}, {}, Document<unknown, {}, IUser, {}, {}> & IUser & Required<{
     _id: unknown;

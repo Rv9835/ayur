@@ -7,7 +7,9 @@ export async function exchangeUidForJwt(
     role?: string;
   }
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/auth/exchange`, {
@@ -46,7 +48,9 @@ export async function selectUserRole(
   role: string,
   extras?: { email?: string | null; name?: string | null }
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/auth/select-role`, {
@@ -85,7 +89,9 @@ export async function selectUserRole(
 }
 
 export async function checkUserExists(uid: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/auth/check-user`, {
@@ -116,7 +122,9 @@ export async function checkUserExists(uid: string) {
 
 // Schedule API functions
 export async function getPatientAppointments(patientId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/schedule/patient/${patientId}`, {
@@ -150,7 +158,9 @@ export async function createAppointment(
   },
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/schedule`, {
@@ -182,7 +192,9 @@ export async function updateAppointmentStatus(
   status: string,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/schedule/${appointmentId}/status`, {
@@ -210,7 +222,9 @@ export async function updateAppointmentStatus(
 }
 
 export async function getAllAppointments(token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/schedule`, {
     headers: {
       "Content-Type": "application/json",
@@ -232,7 +246,9 @@ export async function updateAppointment(
   }>,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/schedule/${id}`, {
     method: "PATCH",
     headers: {
@@ -247,7 +263,9 @@ export async function updateAppointment(
 }
 
 export async function deleteAppointment(id: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/schedule/${id}`, {
     method: "DELETE",
     headers: {
@@ -265,7 +283,9 @@ export async function getAvailableTimeSlots(
   date: string,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(
@@ -293,7 +313,9 @@ export async function getAvailableTimeSlots(
 
 // Users API functions
 export async function getDoctors(token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/users?role=doctor`, {
@@ -318,7 +340,9 @@ export async function getDoctors(token: string) {
 
 // Admin: list users (optional role and search)
 export async function listUsers(token: string, role?: string, query?: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const url = new URL(`${apiBase}/api/users`);
   if (role) url.searchParams.set("role", role);
   if (query) url.searchParams.set("query", query);
@@ -337,7 +361,9 @@ export async function createUserAdmin(
   data: { name?: string; email: string; role: string; isApproved?: boolean },
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users`, {
     method: "POST",
     headers: {
@@ -361,7 +387,9 @@ export async function updateUserAdmin(
   }>,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/${id}`, {
     method: "PUT",
     headers: {
@@ -376,7 +404,9 @@ export async function updateUserAdmin(
 }
 
 export async function deleteUserAdmin(id: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/${id}`, {
     method: "DELETE",
     headers: {
@@ -390,7 +420,9 @@ export async function deleteUserAdmin(id: string, token: string) {
 }
 
 export async function getCurrentUser(token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/me`, {
     headers: {
       "Content-Type": "application/json",
@@ -403,7 +435,9 @@ export async function getCurrentUser(token: string) {
 }
 
 export async function updateCurrentUser(data: any, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/me`, {
     method: "PUT",
     headers: {
@@ -418,7 +452,9 @@ export async function updateCurrentUser(data: any, token: string) {
 }
 
 export async function approveUser(id: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/${id}/approve`, {
     method: "PATCH",
     headers: {
@@ -436,7 +472,9 @@ export async function searchDoctors(
   token?: string,
   uidFallback?: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const url = new URL(`${apiBase}/api/users`);
@@ -483,7 +521,9 @@ export async function getDoctorById(
   token?: string,
   uidFallback?: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -513,7 +553,9 @@ export async function getDoctorReviews(
   token?: string,
   uidFallback?: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -540,7 +582,9 @@ export async function getDoctorReviews(
 
 // Therapies API functions
 export async function getTherapies(token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/therapies`, {
@@ -577,7 +621,9 @@ export async function createTherapy(
   },
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/therapies`, {
     method: "POST",
     headers: {
@@ -606,7 +652,9 @@ export async function updateTherapy(
   }>,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/therapies/${id}`, {
     method: "PUT",
     headers: {
@@ -622,7 +670,9 @@ export async function updateTherapy(
 
 // Admin: Delete therapy
 export async function deleteTherapy(id: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(`${apiBase}/api/therapies/${id}`, {
     method: "DELETE",
     headers: {
@@ -637,7 +687,9 @@ export async function deleteTherapy(id: string, token: string) {
 
 // Progress API functions
 export async function getPatientProgress(patientId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(`${apiBase}/api/progress/patient/${patientId}`, {
@@ -676,7 +728,9 @@ export async function updateSessionFeedback(
   token: string,
   uidFallback?: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(
@@ -706,7 +760,9 @@ export async function updateSessionFeedback(
 }
 
 export async function getPatientGoals(patientId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(
@@ -735,7 +791,9 @@ export async function getPatientGoals(patientId: string, token: string) {
 }
 
 export async function getPatientAchievements(patientId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(
@@ -767,7 +825,9 @@ export async function getPatientNotifications(
   patientId: string,
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
 
   try {
     const res = await fetch(
@@ -797,7 +857,9 @@ export async function getPatientNotifications(
 
 // Messages API
 export async function listMessageThreads(patientId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(
     `${apiBase}/api/messages/threads/patient/${patientId}`,
     {
@@ -819,7 +881,9 @@ export async function listChatMessages(
   token: string,
   uidFallback?: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(
     `${apiBase}/api/messages/threads/${chatId}/messages`,
     {
@@ -845,7 +909,9 @@ export async function sendChatMessage(
   data: { senderId: string; text?: string; attachmentUrl?: string },
   token: string
 ) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(
     `${apiBase}/api/messages/threads/${chatId}/messages`,
     {
@@ -864,7 +930,9 @@ export async function sendChatMessage(
 
 // Doctor-Admin thread for a given doctor (uid or id)
 export async function getDoctorAdminThread(doctorId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(
     `${apiBase}/api/messages/threads/doctor-admin/${doctorId}`,
     {
@@ -880,7 +948,9 @@ export async function getDoctorAdminThread(doctorId: string, token: string) {
 }
 
 export async function listDoctorThreads(doctorId: string, token: string) {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+  const apiBase =
+    process.env.NEXT_PUBLIC_API_BASE ||
+    "https://ayursutra-panchakarma-api.vercel.app";
   const res = await fetch(
     `${apiBase}/api/messages/threads/doctor/${doctorId}`,
     {

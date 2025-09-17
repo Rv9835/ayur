@@ -23,6 +23,7 @@ async function exchangeUidForJwt(req, res) {
             return res.json({
                 token,
                 role: userRole,
+                isApproved: userRole === "patient" ? true : false,
                 message: "Demo mode - database not connected",
             });
         }
@@ -35,14 +36,18 @@ async function exchangeUidForJwt(req, res) {
                 email: email ?? "",
                 name: name ?? "User",
                 role: userRole,
+                // Approval requirements: only patient is auto-approved
+                isApproved: userRole === "patient" ? true : false,
             });
             console.log(`✅ New user created: ${user.name} (${user.uid}) with role: ${userRole}`);
         }
         else {
             console.log(`✅ Existing user found: ${user.name} (${user.uid}) with role: ${user.role}`);
         }
+        // Enforce approval for doctor/admin: token is still issued for API access,
+        // UI must gate via isApproved; include it in response so frontend can gate dashboards
         const token = (0, auth_1.signAppJwt)(user.uid, user.role);
-        return res.json({ token, role: user.role });
+        return res.json({ token, role: user.role, isApproved: user.isApproved });
     }
     catch (e) {
         console.error("Auth controller error:", e);
@@ -51,7 +56,7 @@ async function exchangeUidForJwt(req, res) {
 }
 async function selectRole(req, res) {
     try {
-        const { uid, role } = req.body;
+        const { uid, role, email, name } = req.body;
         if (!uid || !role) {
             return res.status(400).json({ message: "uid and role required" });
         }
@@ -69,17 +74,41 @@ async function selectRole(req, res) {
             return res.json({
                 token,
                 role,
+                isApproved: role === "patient" ? true : false,
                 message: "Demo mode - role selected",
             });
         }
-        // Update user role
-        const user = await User_1.User.findOneAndUpdate({ uid }, { role }, { new: true, upsert: true });
+        // Make creation/update explicit to avoid edge-case validator issues
+        let user = await User_1.User.findOne({ uid });
+        if (!user) {
+            user = await User_1.User.create({
+                uid,
+                email: email ?? "",
+                name: name ?? "User",
+                role,
+                isApproved: role === "doctor" || role === "admin" ? false : true,
+            });
+        }
+        else {
+            if (typeof role === "string" && role)
+                user.role = role;
+            // If elevating to doctor/admin and isApproved is not explicitly set, default to false
+            if ((role === "doctor" || role === "admin") &&
+                typeof user.isApproved === "undefined") {
+                user.isApproved = false;
+            }
+            if (!user.name && typeof name === "string")
+                user.name = name || "User";
+            if (!user.email && typeof email === "string")
+                user.email = email || "";
+            await user.save();
+        }
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         console.log(`✅ User role updated: ${user.name} (${user.uid}) -> ${role}`);
         const token = (0, auth_1.signAppJwt)(user.uid, user.role);
-        return res.json({ token, role: user.role });
+        return res.json({ token, role: user.role, isApproved: user.isApproved });
     }
     catch (e) {
         console.error("Role selection error:", e);

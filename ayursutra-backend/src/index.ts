@@ -44,7 +44,7 @@ export function createApp() {
 
   const resolvedMongoUri =
     process.env.MONGO_URI ||
-    "mongodb+srv://prince844121_db_user:chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+    "mongodb+srv://prince844121_db_user:chaman123@cluster0.yilecha.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0";
 
   // Track last connection error for diagnostics
   let lastMongoError: string | null = null;
@@ -229,18 +229,45 @@ export function createApp() {
     res.redirect(302, "/health");
   });
 
-  // Root route to indicate backend is online and point to health
+  // Root route: show MongoDB URI (masked) and live connection state
   app.get("/", (req, res) => {
     const portInfo = process.env.VERCEL
       ? "serverless"
       : `port ${process.env.PORT || 4000}`;
-    res
-      .type("text/plain")
-      .send(
-        `AyurSutra Backend is online (${portInfo}).\n` +
-          `Health: /health\n` +
-          `API Base: /api\n`
+
+    const state = mongoose.connection.readyState;
+    const status =
+      state === 1
+        ? "connected"
+        : state === 2
+        ? "connecting"
+        : state === 3
+        ? "disconnecting"
+        : "disconnected";
+
+    // Mask the URI: show protocol + host [+ db], hide credentials
+    let maskedUri = "unknown";
+    try {
+      const uri = new URL(
+        resolvedMongoUri
+          .replace("mongodb+srv://", "https://")
+          .replace("mongodb://", "http://")
       );
+      const dbName = mongoose.connection.name || uri.pathname.replace("/", "") || "";
+      maskedUri = `${uri.protocol.replace(":", "")}://${uri.hostname}${dbName ? "/" + dbName : ""}`;
+    } catch {
+      maskedUri = "unparseable-uri";
+    }
+
+    const lines = [
+      `AyurSutra Backend is online (${portInfo}).`,
+      `MongoDB: ${status} (state=${state})`,
+      `Mongo URI: ${maskedUri}`,
+      `Health: /health`,
+      `API Base: /api`,
+    ];
+
+    res.type("text/plain").send(lines.join("\n") + "\n");
   });
 
   app.use("/api", routes);

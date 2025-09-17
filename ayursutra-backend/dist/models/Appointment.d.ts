@@ -5,7 +5,7 @@ export interface IAppointment extends Document {
     therapy: Types.ObjectId;
     startTime: Date;
     endTime: Date;
-    status: "scheduled" | "in_progress" | "completed" | "cancelled";
+    status: "scheduled" | "in_progress" | "completed" | "cancelled" | "delayed";
     notes?: string;
     rating?: number;
     duration?: number;

@@ -5,6 +5,8 @@ const Appointment_1 = require("../models/Appointment");
 const User_1 = require("../models/User");
 const Therapy_1 = require("../models/Therapy");
 const auth_1 = require("../middleware/auth");
+const events_1 = require("../realtime/events");
+const mailer_1 = require("../utils/mailer");
 const router = (0, express_1.Router)();
 router.use(auth_1.verifyAppJwt);
 // Get all appointments (admin/doctor only)
@@ -160,6 +162,31 @@ router.post("/", (0, auth_1.requireRoles)(["admin", "doctor", "patient"]), async
             { path: "doctor", select: "name email" },
             { path: "therapy", select: "name description durationMinutes" },
         ]);
+        (0, events_1.emitRealtime)({
+            type: "appointment.created",
+            payload: {
+                id: String(created._id),
+                status: created.status,
+                patient: created.patient,
+                doctor: created.doctor,
+                therapy: created.therapy,
+            },
+        });
+        // Fire pre-session email to patient (best-effort)
+        try {
+            const to = created.patient?.email;
+            if (to) {
+                const payload = (0, mailer_1.buildPreEmail)({
+                    patientName: created.patient?.name,
+                    therapyName: created.therapy?.name,
+                    therapistName: created.doctor?.name,
+                    startTimeISO: created.startTime.toISOString(),
+                    durationMinutes: created.therapy?.durationMinutes,
+                });
+                await (0, mailer_1.sendMail)({ to, ...payload });
+            }
+        }
+        catch { }
         res.status(201).json(created);
     }
     catch (error) {
@@ -179,6 +206,12 @@ router.patch("/:id/status", (0, auth_1.requireRoles)(["admin", "doctor", "patien
         const appointment = await Appointment_1.Appointment.findById(id);
         if (!appointment) {
             return res.status(404).json({ error: "Appointment not found" });
+        }
+        // Disallow changing status of a cancelled appointment back to another status
+        if (appointment.status === "cancelled" && status !== "cancelled") {
+            return res.status(400).json({
+                error: "Cancelled sessions cannot be marked to another status",
+            });
         }
         // Check permissions - need to find users by UID first
         let isPatient = false, isDoctor = false, isAdmin = false;
@@ -209,6 +242,37 @@ router.patch("/:id/status", (0, auth_1.requireRoles)(["admin", "doctor", "patien
             { path: "doctor", select: "name email" },
             { path: "therapy", select: "name description durationMinutes" },
         ]);
+        // If completed, send post-session and feedback emails (best-effort)
+        try {
+            if (updated.status === "completed") {
+                const to = updated.patient?.email;
+                if (to) {
+                    const payload = (0, mailer_1.buildPostEmail)({
+                        patientName: updated.patient?.name,
+                        therapyName: updated.therapy?.name,
+                    });
+                    await (0, mailer_1.sendMail)({ to, ...payload });
+                    const webBase = process.env.WEB_BASE_URL || "http://localhost:3001";
+                    const fbLink = `${webBase}/dashboard/patient/feedback?appointment=${String(updated._id)}`;
+                    const feedback = (0, mailer_1.buildFeedbackEmail)({
+                        patientName: updated.patient?.name,
+                        doctorName: updated.doctor?.name,
+                        feedbackLink: fbLink,
+                    });
+                    await (0, mailer_1.sendMail)({ to, ...feedback });
+                }
+            }
+        }
+        catch { }
+        (0, events_1.emitRealtime)({
+            type: "appointment.updated",
+            payload: {
+                id: String(updated._id),
+                status: updated.status,
+                patient: updated.patient,
+                doctor: updated.doctor,
+            },
+        });
         res.json(updated);
     }
     catch (error) {

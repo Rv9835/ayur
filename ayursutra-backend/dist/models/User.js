@@ -13,6 +13,7 @@ const UserSchema = new mongoose_1.Schema({
     },
     specialty: { type: String }, // For doctors
     avatar: { type: String }, // Profile picture
+    isApproved: { type: Boolean, default: false },
 }, { timestamps: true });
 exports.User = (0, mongoose_1.model)("User", UserSchema);
 //# sourceMappingURL=User.js.map

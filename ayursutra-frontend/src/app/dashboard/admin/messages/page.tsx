@@ -127,7 +127,9 @@ export default function AdminMessagesPage() {
   // SSE live updates for open chat
   useEffect(() => {
     if (!token) return;
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_BASE ||
+      "https://ayursutra-panchakarma-api.vercel.app";
     const es = new EventSource(`${apiBase}/api/events`);
     es.addEventListener("message.created", async (ev: MessageEvent) => {
       try {

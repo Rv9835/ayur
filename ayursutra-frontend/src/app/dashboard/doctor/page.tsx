@@ -448,7 +448,9 @@ export default function DoctorDashboard() {
 
   // Realtime refresh on new messages
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_BASE ||
+      "https://ayursutra-panchakarma-api.vercel.app";
     const es = new EventSource(`${apiBase}/api/events`);
     const onMessage = (ev: MessageEvent) => {
       try {
@@ -758,7 +760,9 @@ export default function DoctorDashboard() {
 
   // SSE for realtime messages/unread/appointments
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_BASE ||
+      "https://ayursutra-panchakarma-api.vercel.app";
     const es = new EventSource(`${apiBase}/api/events`);
     const lastMessageChatIdRef = { current: null as string | null };
     es.addEventListener("message.created", async (ev: MessageEvent) => {

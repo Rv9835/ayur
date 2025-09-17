@@ -29,10 +29,10 @@ router.get("/:id", (0, auth_1.requireRoles)(["admin", "doctor", "patient"]), asy
         res.status(500).json({ error: "Failed to fetch therapy" });
     }
 });
-// Create therapy (admin only)
-router.post("/", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
+// Create therapy (admin and doctor)
+router.post("/", (0, auth_1.requireRoles)(["admin", "doctor"]), async (req, res) => {
     try {
-        const { name, description, durationMinutes } = req.body;
+        const { name, description, durationMinutes, venueAddress, price, category, status, requirements, } = req.body;
         // Validate required fields
         if (!name || !durationMinutes) {
             return res.status(400).json({ error: "Name and duration are required" });
@@ -41,6 +41,11 @@ router.post("/", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
             name,
             description,
             durationMinutes: parseInt(durationMinutes),
+            venueAddress,
+            price: price !== undefined ? Number(price) : undefined,
+            category,
+            status,
+            requirements,
         });
         const created = await therapy.save();
         res.status(201).json(created);
@@ -49,14 +54,17 @@ router.post("/", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
         res.status(500).json({ error: "Failed to create therapy" });
     }
 });
-// Update therapy (admin only)
-router.put("/:id", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
+// Update therapy (admin and doctor)
+router.put("/:id", (0, auth_1.requireRoles)(["admin", "doctor"]), async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
-        // Convert duration to number if provided
-        if (updateData.durationMinutes) {
+        // Convert duration and price to number if provided
+        if (updateData.durationMinutes !== undefined) {
             updateData.durationMinutes = parseInt(updateData.durationMinutes);
+        }
+        if (updateData.price !== undefined) {
+            updateData.price = Number(updateData.price);
         }
         const therapy = await Therapy_1.Therapy.findByIdAndUpdate(id, updateData, {
             new: true,
@@ -70,8 +78,8 @@ router.put("/:id", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
         res.status(500).json({ error: "Failed to update therapy" });
     }
 });
-// Delete therapy (admin only)
-router.delete("/:id", (0, auth_1.requireRoles)(["admin"]), async (req, res) => {
+// Delete therapy (admin and doctor)
+router.delete("/:id", (0, auth_1.requireRoles)(["admin", "doctor"]), async (req, res) => {
     try {
         const { id } = req.params;
         const therapy = await Therapy_1.Therapy.findByIdAndDelete(id);
