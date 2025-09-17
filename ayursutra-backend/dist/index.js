@@ -40,24 +40,53 @@ app.use(express_1.default.json());
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI environment variable is required");
-  process.exit(1);
-}
-mongoose_1.default
-  .connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected successfully"))
-  .catch((error) => {
-    console.error("❌ MongoDB connection failed:", error);
-    console.log("⚠️ Server will continue without database connection");
+} else {
+  // Set up connection event listeners
+  mongoose_1.default.connection.on('connected', () => {
+    console.log("✅ MongoDB connected successfully");
   });
+  
+  mongoose_1.default.connection.on('error', (error) => {
+    console.error("❌ MongoDB connection error:", error);
+  });
+  
+  mongoose_1.default.connection.on('disconnected', () => {
+    console.log("⚠️ MongoDB disconnected");
+  });
+
+  // Attempt connection with retry
+  mongoose_1.default
+    .connect(MONGO_URI, {
+      // Add connection options for better reliability
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+      // Add retry logic
+      retryWrites: true,
+      w: 'majority',
+    })
+    .then(() => console.log("✅ MongoDB connection established"))
+    .catch((error) => {
+      console.error("❌ MongoDB connection failed:", error);
+      console.log("⚠️ Server will continue without database connection");
+      // Don't exit process, let server continue
+    });
+}
 // Health check endpoint
 app.get("/health", (req, res) => {
+  const dbState = mongoose_1.default.connection.readyState;
+  const dbStatus = dbState === 1 ? "connected" : 
+                  dbState === 2 ? "connecting" : 
+                  dbState === 3 ? "disconnecting" : "disconnected";
+  
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
-    database:
-      mongoose_1.default.connection.readyState === 1
-        ? "connected"
-        : "disconnected",
+    database: dbStatus,
+    mongoState: dbState,
+    environment: process.env.NODE_ENV || "development",
+    hasMongoUri: !!process.env.MONGO_URI,
   });
 });
 // Alias and root endpoint for online status

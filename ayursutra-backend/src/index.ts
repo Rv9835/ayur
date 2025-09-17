@@ -43,21 +43,52 @@ export function createApp() {
   if (!MONGO_URI) {
     console.error("❌ MONGO_URI environment variable is required");
   } else {
+    // Set up connection event listeners
+    mongoose.connection.on('connected', () => {
+      console.log("✅ MongoDB connected successfully");
+    });
+    
+    mongoose.connection.on('error', (error) => {
+      console.error("❌ MongoDB connection error:", error);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log("⚠️ MongoDB disconnected");
+    });
+
+    // Attempt connection with retry
     mongoose
-      .connect(MONGO_URI)
-      .then(() => console.log("✅ MongoDB connected successfully"))
+      .connect(MONGO_URI, {
+        // Add connection options for better reliability
+        maxPoolSize: 10,
+        serverSelectionTimeoutMS: 5000,
+        socketTimeoutMS: 45000,
+        bufferCommands: false,
+        // Add retry logic
+        retryWrites: true,
+        w: 'majority',
+      })
+      .then(() => console.log("✅ MongoDB connection established"))
       .catch((error) => {
         console.error("❌ MongoDB connection failed:", error);
         console.log("⚠️ Server will continue without database connection");
+        // Don't exit process, let server continue
       });
   }
 
   app.get("/health", (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const dbStatus = dbState === 1 ? "connected" : 
+                    dbState === 2 ? "connecting" : 
+                    dbState === 3 ? "disconnecting" : "disconnected";
+    
     res.json({
       status: "OK",
       timestamp: new Date().toISOString(),
-      database:
-        mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+      database: dbStatus,
+      mongoState: dbState,
+      environment: process.env.NODE_ENV || "development",
+      hasMongoUri: !!process.env.MONGO_URI,
     });
   });
 
