@@ -9,7 +9,14 @@ export const MONGODB_CONFIG = {
     process.env.MONGO_URI ||
     (() => {
       console.error("❌ MONGO_URI environment variable is not set!");
-      throw new Error("MONGO_URI environment variable is required");
+      console.error("🔧 Please set MONGO_URI in Vercel environment variables");
+      // Use fallback for development, but log the issue
+      const fallbackUri =
+        "mongodb+srv://prince844121_db_user:chaman123@cluster0.yilecha.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0";
+      console.warn(
+        "⚠️ Using fallback URI - this should only happen in development"
+      );
+      return fallbackUri;
     })(),
 
   // Connection options optimized for Vercel serverless

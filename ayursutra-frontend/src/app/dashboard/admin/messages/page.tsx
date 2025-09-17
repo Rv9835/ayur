@@ -128,8 +128,7 @@ export default function AdminMessagesPage() {
   useEffect(() => {
     if (!token) return;
     const apiBase =
-      process.env.NEXT_PUBLIC_API_BASE ||
-      "https://ayursutra-panchakarma-api.vercel.app";
+      process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
     const es = new EventSource(`${apiBase}/api/events`);
     es.addEventListener("message.created", async (ev: MessageEvent) => {
       try {
