@@ -28,7 +28,7 @@ export async function exchangeUidForJwt(
     }
 
     return res.json() as Promise<{ token: string; role: string }>;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle network errors, timeouts, and other issues
     if (error.name === "AbortError") {
       throw new Error("Request timed out. Backend server may be unavailable.");
@@ -72,7 +72,7 @@ export async function selectUserRole(
     }
 
     return res.json() as Promise<{ token: string; role: string }>;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle network errors, timeouts, and other issues
     if (error.name === "AbortError") {
       throw new Error("Request timed out. Backend server may be unavailable.");
@@ -110,7 +110,7 @@ export async function checkUserExists(uid: string) {
 
     const data = await res.json();
     return data.exists;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // If backend is not available, assume user doesn't exist (new user)
     console.warn("Backend not available, assuming new user:", error);
     return false;
@@ -215,7 +215,7 @@ export async function createAppointment(
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating appointment:", error);
     throw error;
   }
@@ -248,7 +248,7 @@ export async function updateAppointmentStatus(
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating appointment status:", error);
     throw error;
   }
@@ -334,7 +334,7 @@ export async function getAvailableTimeSlots(
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching available slots:", error);
     throw error;
   }
@@ -460,7 +460,7 @@ export async function getCurrentUser(token: string) {
   return res.json();
 }
 
-export async function updateCurrentUser(data: any, token: string) {
+export async function updateCurrentUser(data: Record<string, unknown>, token: string) {
   const apiBase =
     process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/me`, {
@@ -533,7 +533,7 @@ export async function searchDoctors(
         image?: string;
       }>
     >;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error searching doctors:", error);
     throw error;
   }
@@ -727,7 +727,7 @@ export async function getPatientProgress(patientId: string, token: string) {
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching progress data:", error);
     throw error;
   }
@@ -771,7 +771,7 @@ export async function updateSessionFeedback(
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating session feedback:", error);
     throw error;
   }
@@ -801,7 +801,7 @@ export async function getPatientGoals(patientId: string, token: string) {
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching goals:", error);
     throw error;
   }
@@ -831,7 +831,7 @@ export async function getPatientAchievements(patientId: string, token: string) {
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching achievements:", error);
     throw error;
   }
@@ -864,7 +864,7 @@ export async function getPatientNotifications(
     }
 
     return res.json() as Promise<{ pre: Array<any>; post: Array<any> }>;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching notifications:", error);
     throw error;
   }
@@ -889,7 +889,7 @@ export async function listMessageThreads(patientId: string, token?: string) {
     }
   );
   if (!res.ok) throw new Error(`Failed to load threads: ${res.status}`);
-  return res.json() as Promise<Array<{ chatId: string; doctor: any }>>;
+  return res.json() as Promise<Array<{ chatId: string; doctor: Record<string, unknown> }>>;
 }
 
 export async function listChatMessages(
@@ -916,8 +916,8 @@ export async function listChatMessages(
   if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
   return res.json() as Promise<{
     chatId: string;
-    participants: any[];
-    messages: any[];
+    participants: Record<string, unknown>[];
+    messages: Record<string, unknown>[];
   }>;
 }
 
@@ -945,7 +945,7 @@ export async function sendChatMessage(
     }
   );
   if (!res.ok) throw new Error(`Failed to send message: ${res.status}`);
-  return res.json() as Promise<{ chatId: string; messages: any[] }>;
+  return res.json() as Promise<{ chatId: string; messages: Record<string, unknown>[] }>;
 }
 
 // Doctor-Admin thread for a given doctor (uid or id)
@@ -980,5 +980,5 @@ export async function listDoctorThreads(doctorId: string, token: string) {
     }
   );
   if (!res.ok) throw new Error(`Failed to load doctor threads: ${res.status}`);
-  return res.json() as Promise<Array<{ chatId: string; patient: any }>>;
+  return res.json() as Promise<Array<{ chatId: string; patient: Record<string, unknown> }>>;
 }
