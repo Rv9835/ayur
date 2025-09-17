@@ -94,7 +94,7 @@ export default function PatientNavbar() {
           } catch {}
         }
         // Backend list endpoint doesn't support free text; fetch allowed doctors then filter client-side
-        let data: any[] = [];
+        let data: Record<string, unknown>[] = [];
         const primaryAuth =
           token && token.includes(".") ? token : uidFallback || token || "";
         try {
@@ -116,7 +116,7 @@ export default function PatientNavbar() {
             data = [];
           }
         }
-        const filtered = (data || []).filter((d: any) => {
+        const filtered = (data || []).filter((d: Record<string, unknown>) => {
           if (d.role && String(d.role).toLowerCase() !== "doctor") return false;
           const q = query.toLowerCase();
           const name = (
@@ -140,7 +140,7 @@ export default function PatientNavbar() {
             uid.includes(q)
           );
         });
-        const mapped = (filtered || []).map((d: any) => {
+        const mapped = (filtered || []).map((d: Record<string, unknown>) => {
           let avatar: string | undefined = d.photoURL || d.avatar || d.image;
           if (
             !avatar ||
@@ -163,7 +163,7 @@ export default function PatientNavbar() {
           if ((mapped?.length || 0) === 0) {
             console.log(
               "Sample doctor names",
-              (data || []).slice(0, 5).map((d: any) => ({
+              (data || []).slice(0, 5).map((d: Record<string, unknown>) => ({
                 name: d.displayName || d.name,
                 email: d.email,
                 specialty: d.specialty || d.specialisation,

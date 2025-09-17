@@ -82,7 +82,7 @@ export default function DashboardHeader({
       if (!token) return;
       const docs = await getDoctors(token);
       const pendingList = (docs || []).filter(
-        (d: any) => d.role === "doctor" && d.isApproved === false
+        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved === false
       );
       setAdminNotifCount(pendingList.length);
       setAdminPending(pendingList);
@@ -270,7 +270,7 @@ export default function DashboardHeader({
                         </div>
                       ) : (
                         <div className="space-y-2 max-h-64 overflow-auto pr-1">
-                          {adminPending.slice(0, 10).map((d: any) => (
+                          {adminPending.slice(0, 10).map((d: Record<string, unknown>) => (
                             <div
                               key={String(d._id || d.uid || d.email)}
                               className="p-3 border rounded-md"

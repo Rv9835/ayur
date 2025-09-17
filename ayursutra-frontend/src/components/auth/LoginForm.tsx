@@ -12,8 +12,8 @@ import {
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
 // Type assertions for Firebase imports
-const firebaseAuth = auth as any;
-const firebaseGoogleProvider = googleProvider as any;
+const firebaseAuth = auth as unknown;
+const firebaseGoogleProvider = googleProvider as unknown;
 import { UserRole } from "@/lib/auth-store";
 import RoleSelection from "./RoleSelection";
 
@@ -98,7 +98,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
       const idToken = await res.user.getIdToken();
 
       // Store Google access token for profile picture
-      const credential = (res as any).credential;
+      const credential = (res as { credential?: { accessToken?: string } }).credential;
       if (credential && credential.accessToken) {
         localStorage.setItem("google_access_token", credential.accessToken);
       }
@@ -147,7 +147,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
         onClose?.();
         router.push("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Google sign-in error:", error);
       if (error.code === "auth/popup-closed-by-user") {
         alert("Sign-in was cancelled. Please try again.");
@@ -229,7 +229,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
         onClose?.();
         router.push("/dashboard");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Email auth error:", error);
       if (error.code === "auth/user-not-found") {
         alert("No account found with this email. Please sign up first.");
@@ -396,7 +396,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                 x="0px"
                 y="0px"
                 viewBox="0 0 512 512"
-                style={{ enableBackground: "new 0 0 512 512" } as any}
+                style={{ enableBackground: "new 0 0 512 512" } as React.CSSProperties}
                 xmlSpace="preserve"
               >
                 <path
@@ -438,7 +438,7 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                 x="0px"
                 y="0px"
                 viewBox="0 0 22.773 22.773"
-                style={{ enableBackground: "new 0 0 22.773 22.773" } as any}
+                style={{ enableBackground: "new 0 0 22.773 22.773" } as React.CSSProperties}
                 xmlSpace="preserve"
               >
                 <g>
