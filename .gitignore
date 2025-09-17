@@ -1,7 +1,2 @@
 ﻿node_modules/
-dist/
 .env
-*.tsbuildinfo
-.vercel/
-npm-debug.log*
-yarn-error.log*

@@ -1,0 +1,1 @@
+{"version":3,"file":"Therapy.d.ts","sourceRoot":"","sources":["../../src/models/Therapy.ts"],"names":[],"mappings":"AAAA,OAAO,EAAiB,QAAQ,EAAS,MAAM,UAAU,CAAC;AAE1D,MAAM,WAAW,QAAS,SAAQ,QAAQ;IACxC,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,CAAC,EAAE,MAAM,CAAC;IACrB,eAAe,EAAE,MAAM,CAAC;CACzB;AAWD,eAAO,MAAM,OAAO;;;;OAA4C,CAAC"}
