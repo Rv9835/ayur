@@ -37,7 +37,7 @@ app.use((0, cors_1.default)(corsOptions));
 app.options(/.*/, (0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 // MongoDB connection
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://prince844121_db_user:.Chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI environment variable is required");
 } else {
@@ -70,7 +70,6 @@ if (!MONGO_URI) {
       retryReads: true,
       // For Vercel/serverless environments
       maxIdleTimeMS: 30000,
-      serverSelectionRetryDelayMS: 2000,
     })
     .then(() => console.log("✅ MongoDB connection established"))
     .catch((error) => {
