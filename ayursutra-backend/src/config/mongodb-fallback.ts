@@ -4,15 +4,18 @@
 import mongoose from "mongoose";
 
 export const MONGODB_CONFIG = {
-  // Primary connection string (with fallback)
+  // Primary connection string - MUST be set via environment variable
   uri:
     process.env.MONGO_URI ||
-    "mongodb+srv://prince844121_db_user:.Chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    (() => {
+      console.error("❌ MONGO_URI environment variable is not set!");
+      throw new Error("MONGO_URI environment variable is required");
+    })(),
 
-  // Connection options optimized for Vercel
+  // Connection options optimized for Vercel serverless
   options: {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 5000,
+    maxPoolSize: 1, // Reduced for serverless
+    serverSelectionTimeoutMS: 10000, // Increased timeout
     socketTimeoutMS: 45000,
     bufferCommands: false,
     retryWrites: true,
@@ -20,6 +23,9 @@ export const MONGODB_CONFIG = {
     directConnection: false,
     retryReads: true,
     maxIdleTimeMS: 30000,
+    // Serverless-specific options
+    connectTimeoutMS: 10000,
+    heartbeatFrequencyMS: 10000,
   },
 };
 

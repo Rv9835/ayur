@@ -7,6 +7,7 @@ import {
   connectWithRetry,
   getConnectionStatus,
 } from "./config/mongodb-fallback";
+import { connectToDatabase } from "./config/mongodb-serverless";
 
 dotenv.config();
 
@@ -29,14 +30,39 @@ export function createApp() {
     "http://127.0.0.1:3000",
   ];
 
+  const isOriginAllowed = (origin: string) => {
+    if (allowedOrigins.includes(origin)) return true;
+    // Allow any Vercel preview/frontends for this project
+    if (origin.endsWith(".vercel.app")) return true;
+    // Allow localhost variations
+    if (/^http:\/\/localhost:\d+$/.test(origin)) return true;
+    if (/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) return true;
+    return false;
+  };
+
   const corsOptions: cors.CorsOptions = {
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (isOriginAllowed(origin)) return callback(null, true);
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
+    optionsSuccessStatus: 204,
   };
+
+  // Set Vary header for proxies/CDNs and apply CORS early
+  app.use((req, res, next) => {
+    res.setHeader("Vary", "Origin");
+    next();
+  });
   app.use(cors(corsOptions));
   // Express v5: use regex for catch-all preflight handling
   app.options(/.*/, cors(corsOptions));
@@ -115,9 +141,13 @@ export function createApp() {
 
     // Attempt connection with retry
     console.log("🚀 Attempting MongoDB connection...");
+    console.log(
+      "🔗 Using URI:",
+      resolvedMongoUri.replace(/\/\/.*@/, "//***:***@")
+    ); // Hide credentials in logs
     console.log("⚙️ Connection options:", {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: 1,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
       retryWrites: true,
@@ -125,23 +155,24 @@ export function createApp() {
       directConnection: false,
       retryReads: true,
       maxIdleTimeMS: 30000,
+      connectTimeoutMS: 10000,
+      heartbeatFrequencyMS: 10000,
     });
 
     mongoose
       .connect(resolvedMongoUri, {
-        // Add connection options for better reliability
-        maxPoolSize: 10,
-        serverSelectionTimeoutMS: 5000,
+        // Serverless-optimized connection options
+        maxPoolSize: 1, // Single connection for serverless
+        serverSelectionTimeoutMS: 10000, // Increased timeout
         socketTimeoutMS: 45000,
         bufferCommands: false,
-        // Add retry logic
         retryWrites: true,
         w: "majority",
-        // Add serverless-specific options
         directConnection: false,
         retryReads: true,
-        // For Vercel/serverless environments
         maxIdleTimeMS: 30000,
+        connectTimeoutMS: 10000,
+        heartbeatFrequencyMS: 10000,
       })
       .then(() => {
         console.log("✅ MongoDB connection established");
@@ -176,52 +207,92 @@ export function createApp() {
       });
   }
 
-  app.get("/health", (req, res) => {
-    const dbState = mongoose.connection.readyState;
-    const dbStatus =
-      dbState === 1
-        ? "connected"
-        : dbState === 2
-        ? "connecting"
-        : dbState === 3
-        ? "disconnecting"
-        : "disconnected";
+  app.get("/health", async (req, res) => {
+    try {
+      // Try to connect if not already connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log("🔄 Attempting to connect to MongoDB...");
+        await connectToDatabase();
+      }
 
-    // Debug logging for health check
-    console.log("🏥 Health check requested");
-    console.log("📊 Current MongoDB State:", dbState, "(", dbStatus, ")");
-    console.log("🏠 MongoDB Host:", mongoose.connection.host || "unknown");
-    console.log("🗄️ MongoDB Database:", mongoose.connection.name || "unknown");
-    console.log("🔗 Has MONGO_URI:", !!process.env.MONGO_URI);
-    console.log("❌ Last Error:", lastMongoError || "none");
+      const dbState = mongoose.connection.readyState;
+      const dbStatus =
+        dbState === 1
+          ? "connected"
+          : dbState === 2
+          ? "connecting"
+          : dbState === 3
+          ? "disconnecting"
+          : "disconnected";
 
-    const healthResponse = {
-      status: "OK",
-      timestamp: new Date().toISOString(),
-      database: dbStatus,
-      mongoState: dbState,
-      environment: process.env.NODE_ENV || "development",
-      hasMongoUri: !!process.env.MONGO_URI,
-      mongoUriHost: (() => {
-        try {
-          const uri = new URL(
-            resolvedMongoUri
-              .replace("mongodb+srv://", "https://")
-              .replace("mongodb://", "http://")
-          );
-          return uri.hostname || null;
-        } catch {
-          return null;
-        }
-      })(),
-      lastMongoError,
-      mongoHost: mongoose.connection.host || null,
-      mongoDatabase: mongoose.connection.name || null,
-      mongoPort: mongoose.connection.port || null,
-    };
+      // Debug logging for health check
+      console.log("🏥 Health check requested");
+      console.log("📊 Current MongoDB State:", dbState, "(", dbStatus, ")");
+      console.log("🏠 MongoDB Host:", mongoose.connection.host || "unknown");
+      console.log(
+        "🗄️ MongoDB Database:",
+        mongoose.connection.name || "unknown"
+      );
+      console.log("🔗 Has MONGO_URI:", !!process.env.MONGO_URI);
+      console.log("❌ Last Error:", lastMongoError || "none");
 
-    console.log("📤 Health response:", JSON.stringify(healthResponse, null, 2));
-    res.json(healthResponse);
+      const isHealthy = dbState === 1;
+      const healthResponse = {
+        status: isHealthy ? "OK" : "UNHEALTHY",
+        timestamp: new Date().toISOString(),
+        database: dbStatus,
+        mongoState: dbState,
+        environment: process.env.NODE_ENV || "development",
+        uptime: Math.floor(process.uptime()),
+        memory: process.memoryUsage(),
+        version: process.version,
+        platform: process.platform,
+        // MongoDB connection details
+        mongoHost: mongoose.connection.host || null,
+        mongoDatabase: mongoose.connection.name || null,
+        mongoPort: mongoose.connection.port || null,
+        // URI information
+        hasMongoUri: !!process.env.MONGO_URI,
+        mongoUriHost: (() => {
+          try {
+            const uri = new URL(
+              resolvedMongoUri
+                .replace("mongodb+srv://", "https://")
+                .replace("mongodb://", "http://")
+            );
+            return uri.hostname || null;
+          } catch {
+            return null;
+          }
+        })(),
+        fullMongoUri: resolvedMongoUri, // Full URI for debugging
+        lastMongoError,
+        // Additional connection stats
+        connectionReadyState: mongoose.connection.readyState,
+        connectionStates: {
+          0: "disconnected",
+          1: "connected",
+          2: "connecting",
+          3: "disconnecting",
+        },
+      };
+
+      console.log(
+        "📤 Health response:",
+        JSON.stringify(healthResponse, null, 2)
+      );
+      res.status(isHealthy ? 200 : 503).json(healthResponse);
+    } catch (error) {
+      console.error("❌ Health check failed:", error);
+      res.status(503).json({
+        status: "ERROR",
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error",
+        database: "error",
+        mongoState: mongoose.connection.readyState,
+        environment: process.env.NODE_ENV || "production",
+      });
+    }
   });
 
   // Alias: /api/health for convenience in some clients
@@ -229,7 +300,91 @@ export function createApp() {
     res.redirect(302, "/health");
   });
 
-  // Root route: show MongoDB URI (masked) and live connection state
+  // Detailed MongoDB status endpoint
+  app.get("/api/mongodb-status", async (req, res) => {
+    try {
+      // Try to connect if not already connected
+      if (mongoose.connection.readyState !== 1) {
+        console.log("🔄 Attempting to connect to MongoDB...");
+        await connectToDatabase();
+      }
+
+      const state = mongoose.connection.readyState;
+      const status =
+        state === 1
+          ? "connected"
+          : state === 2
+          ? "connecting"
+          : state === 3
+          ? "disconnecting"
+          : "disconnected";
+
+      // Get detailed connection information
+      const connectionInfo: any = {
+        // Basic connection info
+        status: status,
+        readyState: state,
+        host: mongoose.connection.host || "unknown",
+        port: mongoose.connection.port || "unknown",
+        database: mongoose.connection.name || "unknown",
+
+        // URI information
+        hasMongoUri: !!process.env.MONGO_URI,
+        fullMongoUri: resolvedMongoUri,
+        maskedMongoUri: resolvedMongoUri.replace(/\/\/.*@/, "//***:***@"),
+
+        // Environment info
+        environment: process.env.NODE_ENV || "development",
+        uptime: Math.floor(process.uptime()),
+
+        // System info
+        memory: process.memoryUsage(),
+        version: process.version,
+        platform: process.platform,
+
+        // Connection states reference
+        connectionStates: {
+          0: "disconnected",
+          1: "connected",
+          2: "connecting",
+          3: "disconnecting",
+        },
+
+        // Error info
+        lastError: lastMongoError || null,
+
+        // Timestamp
+        timestamp: new Date().toISOString(),
+      };
+
+      // If connected, try to get collection info
+      if (state === 1 && mongoose.connection.db) {
+        try {
+          const collections = await mongoose.connection.db
+            .listCollections()
+            .toArray();
+          connectionInfo.collections = collections.map((c) => ({
+            name: c.name,
+            type: c.type || "collection",
+          }));
+        } catch (error) {
+          connectionInfo.collectionsError =
+            error instanceof Error ? error.message : "Unknown error";
+        }
+      }
+
+      res.json(connectionInfo);
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+        readyState: mongoose.connection.readyState,
+      });
+    }
+  });
+
+  // Root route: show detailed MongoDB connection info
   app.get("/", (req, res) => {
     const portInfo = process.env.VERCEL
       ? "serverless"
@@ -245,7 +400,10 @@ export function createApp() {
         ? "disconnecting"
         : "disconnected";
 
-    // Mask the URI: show protocol + host [+ db], hide credentials
+    // Show full MongoDB URI (unmasked for debugging)
+    const fullUri = resolvedMongoUri;
+
+    // Also show masked version
     let maskedUri = "unknown";
     try {
       const uri = new URL(
@@ -253,18 +411,47 @@ export function createApp() {
           .replace("mongodb+srv://", "https://")
           .replace("mongodb://", "http://")
       );
-      const dbName = mongoose.connection.name || uri.pathname.replace("/", "") || "";
-      maskedUri = `${uri.protocol.replace(":", "")}://${uri.hostname}${dbName ? "/" + dbName : ""}`;
+      const dbName =
+        mongoose.connection.name || uri.pathname.replace("/", "") || "";
+      maskedUri = `${uri.protocol.replace(":", "")}://${uri.hostname}${
+        dbName ? "/" + dbName : ""
+      }`;
     } catch {
       maskedUri = "unparseable-uri";
     }
 
+    const connectionDetails = {
+      state: state,
+      status: status,
+      host: mongoose.connection.host || "unknown",
+      port: mongoose.connection.port || "unknown",
+      database: mongoose.connection.name || "unknown",
+      hasUri: !!process.env.MONGO_URI,
+      environment: process.env.NODE_ENV || "development",
+      uptime: Math.floor(process.uptime()),
+    };
+
     const lines = [
       `AyurSutra Backend is online (${portInfo}).`,
-      `MongoDB: ${status} (state=${state})`,
-      `Mongo URI: ${maskedUri}`,
-      `Health: /health`,
+      ``,
+      `=== MONGODB CONNECTION DETAILS ===`,
+      `Status: ${status} (state=${state})`,
+      `Host: ${connectionDetails.host}`,
+      `Port: ${connectionDetails.port}`,
+      `Database: ${connectionDetails.database}`,
+      `Environment: ${connectionDetails.environment}`,
+      `Has MONGO_URI: ${connectionDetails.hasUri}`,
+      `Uptime: ${connectionDetails.uptime}s`,
+      ``,
+      `=== CONNECTION URI ===`,
+      `Full URI: ${fullUri}`,
+      `Masked URI: ${maskedUri}`,
+      ``,
+      `=== ENDPOINTS ===`,
+      `Health Check: /health`,
+      `MongoDB Status: /api/mongodb-status`,
       `API Base: /api`,
+      `Detailed Health: /api/health`,
     ];
 
     res.type("text/plain").send(lines.join("\n") + "\n");
