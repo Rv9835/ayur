@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import routes from "./routes";
+import { connectWithRetry, getConnectionStatus } from "./config/mongodb-fallback";
 
 dotenv.config();
 
@@ -38,18 +39,29 @@ export function createApp() {
   app.options(/.*/, cors(corsOptions));
   app.use(express.json());
 
-  const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://prince844121_db_user:.Chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  const resolvedMongoUri =
+    process.env.MONGO_URI ||
+    "mongodb+srv://prince844121_db_user:.Chaman1@cluster0.yilecha.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-  if (!MONGO_URI) {
+  // Track last connection error for diagnostics
+  let lastMongoError: string | null = null;
+
+  if (!resolvedMongoUri) {
     console.error("❌ MONGO_URI environment variable is required");
   } else {
     // Set up connection event listeners
     mongoose.connection.on("connected", () => {
       console.log("✅ MongoDB connected successfully");
+      lastMongoError = null;
     });
 
     mongoose.connection.on("error", (error) => {
       console.error("❌ MongoDB connection error:", error);
+      try {
+        lastMongoError = (error as any)?.message || String(error);
+      } catch {
+        lastMongoError = "Unknown MongoDB error";
+      }
     });
 
     mongoose.connection.on("disconnected", () => {
@@ -58,7 +70,7 @@ export function createApp() {
 
     // Attempt connection with retry
     mongoose
-      .connect(MONGO_URI, {
+      .connect(resolvedMongoUri, {
         // Add connection options for better reliability
         maxPoolSize: 10,
         serverSelectionTimeoutMS: 5000,
@@ -76,6 +88,11 @@ export function createApp() {
       .then(() => console.log("✅ MongoDB connection established"))
       .catch((error) => {
         console.error("❌ MongoDB connection failed:", error);
+        try {
+          lastMongoError = (error as any)?.message || String(error);
+        } catch {
+          lastMongoError = "Unknown MongoDB error";
+        }
         console.log("⚠️ Server will continue without database connection");
         // Don't exit process, let server continue
       });
@@ -99,6 +116,20 @@ export function createApp() {
       mongoState: dbState,
       environment: process.env.NODE_ENV || "development",
       hasMongoUri: !!process.env.MONGO_URI,
+      mongoUriHost: (() => {
+        try {
+          const uri = new URL(
+            resolvedMongoUri.replace("mongodb+srv://", "https://").replace(
+              "mongodb://",
+              "http://"
+            )
+          );
+          return uri.hostname || null;
+        } catch {
+          return null;
+        }
+      })(),
+      lastMongoError,
     });
   });
 
