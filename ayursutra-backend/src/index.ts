@@ -44,15 +44,15 @@ export function createApp() {
     console.error("❌ MONGO_URI environment variable is required");
   } else {
     // Set up connection event listeners
-    mongoose.connection.on('connected', () => {
+    mongoose.connection.on("connected", () => {
       console.log("✅ MongoDB connected successfully");
     });
-    
-    mongoose.connection.on('error', (error) => {
+
+    mongoose.connection.on("error", (error) => {
       console.error("❌ MongoDB connection error:", error);
     });
-    
-    mongoose.connection.on('disconnected', () => {
+
+    mongoose.connection.on("disconnected", () => {
       console.log("⚠️ MongoDB disconnected");
     });
 
@@ -66,7 +66,13 @@ export function createApp() {
         bufferCommands: false,
         // Add retry logic
         retryWrites: true,
-        w: 'majority',
+        w: "majority",
+        // Add serverless-specific options
+        directConnection: false,
+        retryReads: true,
+        // For Vercel/serverless environments
+        maxIdleTimeMS: 30000,
+        serverSelectionRetryDelayMS: 2000,
       })
       .then(() => console.log("✅ MongoDB connection established"))
       .catch((error) => {
@@ -78,10 +84,15 @@ export function createApp() {
 
   app.get("/health", (req, res) => {
     const dbState = mongoose.connection.readyState;
-    const dbStatus = dbState === 1 ? "connected" : 
-                    dbState === 2 ? "connecting" : 
-                    dbState === 3 ? "disconnecting" : "disconnected";
-    
+    const dbStatus =
+      dbState === 1
+        ? "connected"
+        : dbState === 2
+        ? "connecting"
+        : dbState === 3
+        ? "disconnecting"
+        : "disconnected";
+
     res.json({
       status: "OK",
       timestamp: new Date().toISOString(),

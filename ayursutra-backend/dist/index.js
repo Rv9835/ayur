@@ -42,15 +42,15 @@ if (!MONGO_URI) {
   console.error("❌ MONGO_URI environment variable is required");
 } else {
   // Set up connection event listeners
-  mongoose_1.default.connection.on('connected', () => {
+  mongoose_1.default.connection.on("connected", () => {
     console.log("✅ MongoDB connected successfully");
   });
-  
-  mongoose_1.default.connection.on('error', (error) => {
+
+  mongoose_1.default.connection.on("error", (error) => {
     console.error("❌ MongoDB connection error:", error);
   });
-  
-  mongoose_1.default.connection.on('disconnected', () => {
+
+  mongoose_1.default.connection.on("disconnected", () => {
     console.log("⚠️ MongoDB disconnected");
   });
 
@@ -64,7 +64,13 @@ if (!MONGO_URI) {
       bufferCommands: false,
       // Add retry logic
       retryWrites: true,
-      w: 'majority',
+      w: "majority",
+      // Add serverless-specific options
+      directConnection: false,
+      retryReads: true,
+      // For Vercel/serverless environments
+      maxIdleTimeMS: 30000,
+      serverSelectionRetryDelayMS: 2000,
     })
     .then(() => console.log("✅ MongoDB connection established"))
     .catch((error) => {
@@ -76,10 +82,15 @@ if (!MONGO_URI) {
 // Health check endpoint
 app.get("/health", (req, res) => {
   const dbState = mongoose_1.default.connection.readyState;
-  const dbStatus = dbState === 1 ? "connected" : 
-                  dbState === 2 ? "connecting" : 
-                  dbState === 3 ? "disconnecting" : "disconnected";
-  
+  const dbStatus =
+    dbState === 1
+      ? "connected"
+      : dbState === 2
+      ? "connecting"
+      : dbState === 3
+      ? "disconnecting"
+      : "disconnected";
+
   res.json({
     status: "OK",
     timestamp: new Date().toISOString(),
