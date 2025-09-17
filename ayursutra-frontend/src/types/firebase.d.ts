@@ -1,4 +1,4 @@
 declare module "@/lib/firebase" {
-  export const auth: any;
-  export const googleProvider: any;
+  export const auth: unknown;
+  export const googleProvider: unknown;
 }

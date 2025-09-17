@@ -176,7 +176,7 @@ export async function getPatientAppointments(
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching appointments:", error);
     throw error;
   }
@@ -363,7 +363,7 @@ export async function getDoctors(token?: string) {
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching doctors:", error);
     throw error;
   }
@@ -624,7 +624,7 @@ export async function getTherapies(token?: string) {
     }
 
     return res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching therapies:", error);
     throw error;
   }
