@@ -368,23 +368,23 @@ export default function DoctorDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   // View patient dialog state
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [viewPatient, setViewPatient] = useState<any | null>(null);
+  const [viewPatient, setViewPatient] = useState<Record<string, unknown> | null>(null);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [notesText, setNotesText] = useState("");
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isSessionDetailsOpen, setIsSessionDetailsOpen] = useState(false);
-  const [detailsSession, setDetailsSession] = useState<any | null>(null);
+  const [detailsSession, setDetailsSession] = useState<Record<string, unknown> | null>(null);
   // Threads for this doctor (built from backend)
   const [doctorThreads, setDoctorThreads] = useState<
-    Array<{ chatId: string; patient: any }>
+    Array<{ chatId: string; patient: Record<string, unknown> }>
   >([]);
 
-  const openViewPatient = (patient: any) => {
+  const openViewPatient = (patient: Record<string, unknown>) => {
     setViewPatient(patient);
     setIsViewOpen(true);
   };
 
-  const openAddNotes = (session: any) => {
+  const openAddNotes = (session: Record<string, unknown>) => {
     setActiveSessionId(session.id);
     setNotesText(session.notes || "");
     setIsNotesOpen(true);
@@ -399,12 +399,12 @@ export default function DoctorDashboard() {
       }
       toast.success("Notes saved");
       setIsNotesOpen(false);
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save notes");
+    } catch (e: unknown) {
+      toast.error((e as Error)?.message || "Failed to save notes");
     }
   };
 
-  const openSessionDetails = (session: any) => {
+  const openSessionDetails = (session: Record<string, unknown>) => {
     setDetailsSession(session);
     setIsSessionDetailsOpen(true);
   };
@@ -425,7 +425,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     const loadDoctorThreads = async () => {
       try {
-        const token = (useAuthStore.getState().token as any) || "";
+        const token = (useAuthStore.getState().token as string) || "";
         if (!uid || !token) return;
         // Load all doctor chat threads directly from backend, always available
         const threads = await listDoctorThreads(String(uid), token);
@@ -458,15 +458,15 @@ export default function DoctorDashboard() {
           // Reload threads so new patient chats are visible
           (async () => {
             try {
-              const token = (useAuthStore.getState().token as any) || "";
+              const token = (useAuthStore.getState().token as string) || "";
               if (!uid || !token) return;
               const eventChatId = String(data?.payload?.chatId || "");
               if (eventChatId) {
                 try {
                   const cm = await listChatMessages(eventChatId, token, uid);
-                  const parts = (cm.participants || []) as any[];
+                  const parts = (cm.participants || []) as Record<string, unknown>[];
                   const patientP =
-                    parts.find((p: any) => p?.role === "patient") || {};
+                    parts.find((p: Record<string, unknown>) => p?.role === "patient") || {};
                   // Merge or prepend this chat into the doctorThreads list
                   setDoctorThreads((prev) => {
                     const without = (prev || []).filter(
@@ -502,7 +502,7 @@ export default function DoctorDashboard() {
               // Also refresh full list
               try {
                 const threads = await listMessageThreads(String(uid), token);
-                const normalized = (threads || []).map((t: any) => ({
+                const normalized = (threads || []).map((t: Record<string, unknown>) => ({
                   chatId: t.chatId,
                   patient: t.patient || t.doctor || {},
                 }));
@@ -636,7 +636,7 @@ export default function DoctorDashboard() {
   };
 
   const handleMarkComplete = async (appointmentId: number | string) => {
-    const token = (useAuthStore.getState().token as any) || "";
+    const token = (useAuthStore.getState().token as string) || "";
     const idStr = String(appointmentId);
     const isMongoId = /^[a-f\d]{24}$/i.test(idStr);
     if (!token || !isMongoId) {
@@ -652,7 +652,7 @@ export default function DoctorDashboard() {
   };
 
   const handleMarkDelayed = async (appointmentId: number | string) => {
-    const token = (useAuthStore.getState().token as any) || "";
+    const token = (useAuthStore.getState().token as string) || "";
     const idStr = String(appointmentId);
     const isMongoId = /^[a-f\d]{24}$/i.test(idStr);
     if (!token || !isMongoId) {
@@ -669,7 +669,7 @@ export default function DoctorDashboard() {
 
   const handleSendMessage = (patientId: string) => {
     if (newMessage.trim()) {
-      const token = (useAuthStore.getState().token as any) || "";
+      const token = (useAuthStore.getState().token as string) || "";
       if (selectedChatId && uid && token) {
         sendChatMessage(
           selectedChatId,
@@ -721,7 +721,7 @@ export default function DoctorDashboard() {
 
   // When selecting a patient to chat, resolve or create a chat thread and load messages
   useEffect(() => {
-    const token = (useAuthStore.getState().token as any) || "";
+    const token = (useAuthStore.getState().token as string) || "";
     if (!showChat || !selectedPatient || !uid || !token) return;
     setChatLoading(true);
     setSelectedChatId(null);
@@ -733,7 +733,7 @@ export default function DoctorDashboard() {
       .then((threads) => {
         setChatThreads(threads);
         // find thread with this doctor
-        const mine = threads.find((t: any) => t?.doctor?.uid === uid);
+        const mine = threads.find((t: Record<string, unknown>) => t?.doctor?.uid === uid);
         if (mine?.chatId) {
           setSelectedChatId(mine.chatId);
           return listChatMessages(mine.chatId, token, uid).then((data) => {
@@ -747,7 +747,7 @@ export default function DoctorDashboard() {
 
   // Lightweight polling for chat messages when a chat is open
   useEffect(() => {
-    const token = (useAuthStore.getState().token as any) || "";
+    const token = (useAuthStore.getState().token as string) || "";
     if (!selectedChatId || !token) return;
     const interval = setInterval(() => {
       listChatMessages(selectedChatId, token, uid || undefined)
@@ -770,7 +770,7 @@ export default function DoctorDashboard() {
         if (!evChatId) return;
         lastMessageChatIdRef.current = String(evChatId);
         if (evChatId === selectedChatId || evChatId === adminChatId) {
-          const token = (useAuthStore.getState().token as any) || "";
+          const token = (useAuthStore.getState().token as string) || "";
           if (token) {
             const updated = await listChatMessages(
               evChatId,
@@ -825,11 +825,11 @@ export default function DoctorDashboard() {
       // Refresh doctor appointments list if present
       (async () => {
         try {
-          const token = (useAuthStore.getState().token as any) || "";
+          const token = (useAuthStore.getState().token as string) || "";
           if (!token) return;
           const all = await getAllAppointments(token);
           const filtered = (all || []).filter(
-            (a: any) => (a?.doctor?.email || "") === (email || "")
+            (a: Record<string, unknown>) => (a?.doctor?.email || "") === (email || "")
           );
           setDoctorAppointments(filtered);
           const map = new Map<string, any>();
@@ -854,7 +854,7 @@ export default function DoctorDashboard() {
     es.addEventListener("appointment.created", (ev: MessageEvent) => {
       (async () => {
         try {
-          const token = (useAuthStore.getState().token as any) || "";
+          const token = (useAuthStore.getState().token as string) || "";
           if (!token) return;
           // Notify doctor with patient name
           try {
@@ -884,7 +884,7 @@ export default function DoctorDashboard() {
           } catch {}
           const all = await getAllAppointments(token);
           const filtered = (all || []).filter(
-            (a: any) => (a?.doctor?.email || "") === (email || "")
+            (a: Record<string, unknown>) => (a?.doctor?.email || "") === (email || "")
           );
           setDoctorAppointments(filtered);
           const map = new Map<string, any>();
@@ -918,11 +918,11 @@ export default function DoctorDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const token = (useAuthStore.getState().token as any) || "";
+        const token = (useAuthStore.getState().token as string) || "";
         if (!token) return;
         const all = await getAllAppointments(token);
         const filtered = (all || []).filter(
-          (a: any) => (a?.doctor?.email || "") === (email || "")
+          (a: Record<string, unknown>) => (a?.doctor?.email || "") === (email || "")
         );
         setDoctorAppointments(filtered);
         const map = new Map<string, any>();
@@ -952,7 +952,7 @@ export default function DoctorDashboard() {
       e.preventDefault();
       if (!composer.trim() && !attachmentUrl.trim()) return;
       if (!(selectedChatId || adminChatId) || !uid) return;
-      const token = (useAuthStore.getState().token as any) || "";
+      const token = (useAuthStore.getState().token as string) || "";
       const chatId = selectedChatId || adminChatId!;
       sendChatMessage(
         chatId,
@@ -1373,7 +1373,7 @@ export default function DoctorDashboard() {
                     patientsFromAppointments.length
                       ? patientsFromAppointments
                       : filteredPatients
-                    ).map((patient: any) => (
+                    ).map((patient: Record<string, unknown>) => (
                       <div
                         key={patient.id || patient.email}
                         className="flex items-center justify-between p-6 border rounded-lg hover:bg-gray-50"
@@ -1642,7 +1642,7 @@ export default function DoctorDashboard() {
                     {(doctorAppointments && doctorAppointments.length
                       ? doctorAppointments
                       : mockData.todayAppointments
-                    ).map((session: any) => (
+                    ).map((session: Record<string, unknown>) => (
                       <div
                         key={session._id || session.id}
                         className="flex items-center justify-between p-6 border rounded-lg"
@@ -1808,7 +1808,7 @@ export default function DoctorDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(therapies || mockData.therapies).map((therapy: any) => (
+                    {(therapies || mockData.therapies).map((therapy: Record<string, unknown>) => (
                       <div
                         key={therapy._id || therapy.id}
                         className="border rounded-lg p-6 hover:shadow-md transition-shadow"
@@ -2172,7 +2172,7 @@ export default function DoctorDashboard() {
                                           token
                                         );
                                       const found = (ptsThreads || []).find(
-                                        (th: any) =>
+                                        (th: Record<string, unknown>) =>
                                           String(
                                             th?.doctor?.uid ||
                                               th?.doctor?.id ||
@@ -2198,7 +2198,7 @@ export default function DoctorDashboard() {
                                                 : x
                                             ) as Array<{
                                               chatId: string;
-                                              patient: any;
+                                              patient: Record<string, unknown>;
                                             }>
                                         );
                                       }
@@ -2267,7 +2267,7 @@ export default function DoctorDashboard() {
                             No messages yet.
                           </div>
                         ) : (
-                          (chatMessages || []).map((m: any, i: number) => (
+                          (chatMessages || []).map((m: Record<string, unknown>, i: number) => (
                             <div
                               key={m?._id || m?.id || m?.createdAt || i}
                               className="p-2 border rounded-md"
@@ -2760,7 +2760,7 @@ export default function DoctorDashboard() {
                           role: "therapist",
                           isApproved: true,
                         });
-                      } catch (e: any) {
+                      } catch (e: unknown) {
                         toast.error(e?.message || "Failed to create staff");
                       } finally {
                         setSavingStaff(false);
@@ -2824,7 +2824,7 @@ export default function DoctorDashboard() {
                 )}
                 {!chatLoading && (selectedChatId || adminChatId) && (
                   <div className="max-h-80 overflow-auto space-y-2">
-                    {(chatMessages || []).map((m: any, i: number) => (
+                    {(chatMessages || []).map((m: Record<string, unknown>, i: number) => (
                       <div
                         key={m?._id || m?.id || m?.createdAt || i}
                         className="p-3 border rounded-md"
