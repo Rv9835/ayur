@@ -866,7 +866,10 @@ export async function getPatientNotifications(
       throw new Error(`Failed to fetch notifications: ${res.status}`);
     }
 
-    return res.json() as Promise<{ pre: Array<Record<string, unknown>>; post: Array<Record<string, unknown>> }>;
+    return res.json() as Promise<{
+      pre: Array<Record<string, unknown>>;
+      post: Array<Record<string, unknown>>;
+    }>;
   } catch (error: unknown) {
     console.error("Error fetching notifications:", error);
     throw error;

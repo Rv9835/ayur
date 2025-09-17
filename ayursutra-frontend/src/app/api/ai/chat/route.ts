@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
 
     const model = "models/gemini-2.0-flash";
 
-    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> =
+      [];
     if (system) {
       contents.push({ role: "user", parts: [{ text: `SYSTEM:\n${system}` }] });
     }

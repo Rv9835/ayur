@@ -24,7 +24,8 @@ export default function AdminMessagesPage() {
   const selectedDoctor = useMemo(
     () =>
       doctors.find(
-        (d: Record<string, unknown>) => String(d.uid || d._id) === String(selectedDoctorUid)
+        (d: Record<string, unknown>) =>
+          String(d.uid || d._id) === String(selectedDoctorUid)
       ),
     [doctors, selectedDoctorUid]
   );
@@ -51,7 +52,8 @@ export default function AdminMessagesPage() {
     try {
       const docs = await getDoctors(token);
       const approved = (docs || []).filter(
-        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved !== false
+        (d: Record<string, unknown>) =>
+          d.role === "doctor" && d.isApproved !== false
       );
       setDoctors(approved);
     } catch (err: unknown) {
@@ -250,39 +252,45 @@ export default function AdminMessagesPage() {
                       No messages yet.
                     </div>
                   ) : (
-                    (messages || []).map((m: Record<string, unknown>, i: number) => (
-                      <div
-                        key={m?._id || m?.id || m?.createdAt || i}
-                        className="flex items-start gap-2"
-                      >
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage
-                            src={m?.sender?.avatar}
-                            alt={
-                              m?.sender?.name || selectedDoctor?.name || "User"
-                            }
-                          />
-                          <AvatarFallback>
-                            {(m?.sender?.name || "U").slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="bg-accent rounded-md px-3 py-2 max-w-[75%]">
-                          <div className="text-xs text-gray-500 mb-0.5">
-                            {m?.sender?.name ||
-                              (m?.sender?.uid === selectedDoctorUid
-                                ? selectedDoctor?.name ||
-                                  selectedDoctor?.displayName ||
-                                  selectedDoctor?.email
-                                : uid
-                                ? "Admin"
-                                : "User")}
-                          </div>
-                          <div className="text-sm whitespace-pre-wrap break-words">
-                            {m?.text}
+                    (messages || []).map(
+                      (m: Record<string, unknown>, i: number) => (
+                        <div
+                          key={m?._id || m?.id || m?.createdAt || i}
+                          className="flex items-start gap-2"
+                        >
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage
+                              src={m?.sender?.avatar}
+                              alt={
+                                m?.sender?.name ||
+                                selectedDoctor?.name ||
+                                "User"
+                              }
+                            />
+                            <AvatarFallback>
+                              {(m?.sender?.name || "U")
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="bg-accent rounded-md px-3 py-2 max-w-[75%]">
+                            <div className="text-xs text-gray-500 mb-0.5">
+                              {m?.sender?.name ||
+                                (m?.sender?.uid === selectedDoctorUid
+                                  ? selectedDoctor?.name ||
+                                    selectedDoctor?.displayName ||
+                                    selectedDoctor?.email
+                                  : uid
+                                  ? "Admin"
+                                  : "User")}
+                            </div>
+                            <div className="text-sm whitespace-pre-wrap break-words">
+                              {m?.text}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      )
+                    )
                   )}
                   <div ref={endRef} />
                 </div>

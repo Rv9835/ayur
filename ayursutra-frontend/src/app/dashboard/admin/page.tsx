@@ -1,6 +1,6 @@
 "use client";
 import { useAuthStore } from "@/lib/auth-store";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import {
   getDoctors,
   approveUser,
@@ -132,7 +132,7 @@ const mockData = {
   },
 };
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const { uid, role, displayName, email } = useAuthStore();
   const token = useAuthStore((s) => s.token) as any;
   const [activeTab, setActiveTab] = useState("home");
@@ -2360,5 +2360,13 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
     </ProtectedRoute>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminDashboardContent />
+    </Suspense>
   );
 }

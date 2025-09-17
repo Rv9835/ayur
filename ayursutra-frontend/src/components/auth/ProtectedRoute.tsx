@@ -79,7 +79,7 @@ export default function ProtectedRoute({
           setApprovalChecked(true);
           return;
         }
-        const token = useAuthStore.getState().token as any;
+        const token = useAuthStore.getState().token as string;
         if (!token) {
           setApprovalChecked(true);
           return;
@@ -101,7 +101,7 @@ export default function ProtectedRoute({
   // Poll for approval if currently unapproved
   useEffect(() => {
     if (!unapproved) return;
-    const token = useAuthStore.getState().token as any;
+    const token = useAuthStore.getState().token as string;
     if (!token) return;
     const timer = setInterval(async () => {
       try {
@@ -150,7 +150,7 @@ export default function ProtectedRoute({
               onClick={async () => {
                 try {
                   setRefreshing(true);
-                  const token = useAuthStore.getState().token as any;
+                  const token = useAuthStore.getState().token as string;
                   if (!token) return;
                   const me = await getCurrentUser(token);
                   setUnapproved(!me?.isApproved);
