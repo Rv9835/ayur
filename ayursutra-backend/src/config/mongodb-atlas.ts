@@ -38,17 +38,22 @@ export class AtlasDataAPI {
       throw new Error("Atlas Data API not configured");
     }
 
-    const response = await fetch(`${this.baseUrl}/app/data-${this.database}/endpoint/data/v1/action/${endpoint}`, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": this.apiKey,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/app/data-${this.database}/endpoint/data/v1/action/${endpoint}`,
+      {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": this.apiKey,
+        },
+        body: body ? JSON.stringify(body) : null,
+      }
+    );
 
     if (!response.ok) {
-      throw new Error(`Atlas Data API error: ${response.status} ${await response.text()}`);
+      throw new Error(
+        `Atlas Data API error: ${response.status} ${await response.text()}`
+      );
     }
 
     return response.json();
