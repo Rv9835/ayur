@@ -133,7 +133,9 @@ export default function DoctorProfilePage() {
             token && token.includes(".") ? token : patientId || token || "";
           const list = await getDoctors(authHeader);
           doc =
-            (list || []).find((d: Record<string, unknown>) => (d._id || d.id) === doctorId) || null;
+            (list || []).find(
+              (d: Record<string, unknown>) => (d._id || d.id) === doctorId
+            ) || null;
         } catch {}
         if (!doc) {
           try {
@@ -148,7 +150,9 @@ export default function DoctorProfilePage() {
               patientId
             );
             doc =
-              (results || []).find((d: Record<string, unknown>) => (d._id || d.id) === doctorId) ||
+              (results || []).find(
+                (d: Record<string, unknown>) => (d._id || d.id) === doctorId
+              ) ||
               (results || [])[0] ||
               null;
           } catch {}

@@ -98,7 +98,8 @@ export default function LoginForm({ onClose }: LoginFormProps) {
       const idToken = await res.user.getIdToken();
 
       // Store Google access token for profile picture
-      const credential = (res as { credential?: { accessToken?: string } }).credential;
+      const credential = (res as { credential?: { accessToken?: string } })
+        .credential;
       if (credential && credential.accessToken) {
         localStorage.setItem("google_access_token", credential.accessToken);
       }
@@ -396,7 +397,9 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                 x="0px"
                 y="0px"
                 viewBox="0 0 512 512"
-                style={{ enableBackground: "new 0 0 512 512" } as React.CSSProperties}
+                style={
+                  { enableBackground: "new 0 0 512 512" } as React.CSSProperties
+                }
                 xmlSpace="preserve"
               >
                 <path
@@ -438,7 +441,11 @@ export default function LoginForm({ onClose }: LoginFormProps) {
                 x="0px"
                 y="0px"
                 viewBox="0 0 22.773 22.773"
-                style={{ enableBackground: "new 0 0 22.773 22.773" } as React.CSSProperties}
+                style={
+                  {
+                    enableBackground: "new 0 0 22.773 22.773",
+                  } as React.CSSProperties
+                }
                 xmlSpace="preserve"
               >
                 <g>

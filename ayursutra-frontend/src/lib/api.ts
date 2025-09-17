@@ -359,12 +359,19 @@ export async function getDoctors(token?: string) {
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch doctors: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      throw new Error(`Failed to fetch doctors: ${res.status} - ${errorText}`);
     }
 
     return res.json();
   } catch (error: unknown) {
     console.error("Error fetching doctors:", error);
+    // Return empty array for demo mode when backend is down
+    if (error.message?.includes("Failed to fetch") || error.message?.includes("500")) {
+      console.warn("Backend unavailable, returning empty doctors list for demo mode");
+      return [];
+    }
     throw error;
   }
 }
@@ -623,12 +630,19 @@ export async function getTherapies(token?: string) {
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch therapies: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      throw new Error(`Failed to fetch therapies: ${res.status} - ${errorText}`);
     }
 
     return res.json();
   } catch (error: unknown) {
     console.error("Error fetching therapies:", error);
+    // Return empty array for demo mode when backend is down
+    if (error.message?.includes("Failed to fetch") || error.message?.includes("500")) {
+      console.warn("Backend unavailable, returning empty therapies list for demo mode");
+      return [];
+    }
     throw error;
   }
 }
@@ -884,20 +898,36 @@ export async function listMessageThreads(patientId: string, token?: string) {
   const authHeaders = getAuthHeader(token, patientId);
   console.log("Auth headers for message threads:", authHeaders);
 
-  const res = await fetch(
-    `${apiBase}/api/messages/threads/patient/${patientId}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      signal: AbortSignal.timeout(10000),
+  try {
+    const res = await fetch(
+      `${apiBase}/api/messages/threads/patient/${patientId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      throw new Error(`Failed to load threads: ${res.status} - ${errorText}`);
     }
-  );
-  if (!res.ok) throw new Error(`Failed to load threads: ${res.status}`);
-  return res.json() as Promise<
-    Array<{ chatId: string; doctor: Record<string, unknown> }>
-  >;
+    
+    return res.json() as Promise<
+      Array<{ chatId: string; doctor: Record<string, unknown> }>
+    >;
+  } catch (error: unknown) {
+    console.error("Error fetching message threads:", error);
+    // Return empty array for demo mode when backend is down
+    if (error.message?.includes("Failed to fetch") || error.message?.includes("500")) {
+      console.warn("Backend unavailable, returning empty threads list for demo mode");
+      return [];
+    }
+    throw error;
+  }
 }
 
 export async function listChatMessages(

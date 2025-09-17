@@ -292,19 +292,23 @@ export default function PatientSchedulePage() {
           }
         );
 
-        const transformedDoctors = (doctorsData || []).map((doc: Record<string, unknown>) => ({
-          id: doc?._id || doc?.id,
-          name: doc?.name || doc?.displayName || doc?.email || "Doctor",
-          specialty: doc?.specialty || "Ayurvedic Specialist",
-          avatar: doc?.avatar || undefined,
-        }));
+        const transformedDoctors = (doctorsData || []).map(
+          (doc: Record<string, unknown>) => ({
+            id: doc?._id || doc?.id,
+            name: doc?.name || doc?.displayName || doc?.email || "Doctor",
+            specialty: doc?.specialty || "Ayurvedic Specialist",
+            avatar: doc?.avatar || undefined,
+          })
+        );
 
-        const transformedTherapies = therapiesData.map((therapy: Record<string, unknown>) => ({
-          id: therapy._id,
-          name: therapy.name,
-          description: therapy.description || "",
-          duration: therapy.durationMinutes,
-        }));
+        const transformedTherapies = therapiesData.map(
+          (therapy: Record<string, unknown>) => ({
+            id: therapy._id,
+            name: therapy.name,
+            description: therapy.description || "",
+            duration: therapy.durationMinutes,
+          })
+        );
 
         setAppointments(transformedAppointments);
         setDoctors(transformedDoctors);

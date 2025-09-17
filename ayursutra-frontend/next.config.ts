@@ -9,20 +9,21 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   headers: async () => {
-    const isDev = process.env.NODE_ENV !== "production";
-    return isDev
-      ? [
+    return [
+      {
+        source: "/(.*)",
+        headers: [
           {
-            source: "/(.*)",
-            headers: [
-              {
-                key: "Cross-Origin-Opener-Policy",
-                value: "same-origin-allow-popups",
-              },
-            ],
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
           },
-        ]
-      : [];
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "unsafe-none",
+          },
+        ],
+      },
+    ];
   },
 };
 

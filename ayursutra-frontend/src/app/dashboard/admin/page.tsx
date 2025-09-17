@@ -241,11 +241,13 @@ function AdminDashboardContent() {
     try {
       const docs = await getDoctors(token);
       const pending = (docs || []).filter(
-        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved === false
+        (d: Record<string, unknown>) =>
+          d.role === "doctor" && d.isApproved === false
       );
       setPendingDoctors(pending);
       const approved = (docs || []).filter(
-        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved !== false
+        (d: Record<string, unknown>) =>
+          d.role === "doctor" && d.isApproved !== false
       );
       setApprovedDoctors(approved);
     } catch (e) {
@@ -529,7 +531,11 @@ function AdminDashboardContent() {
         listUsers(token),
       ]);
       setAdmins(adminUsers || []);
-      setNonAdmins((allUsers || []).filter((u: Record<string, unknown>) => u.role !== "admin"));
+      setNonAdmins(
+        (allUsers || []).filter(
+          (u: Record<string, unknown>) => u.role !== "admin"
+        )
+      );
     } catch (e) {
       toast.error("Failed to load role data");
     } finally {
@@ -1406,7 +1412,10 @@ function AdminDashboardContent() {
                         >
                           <option value="">Select patient (UID or ID)</option>
                           {patients
-                            .filter((p: Record<string, unknown>) => p.role === "patient")
+                            .filter(
+                              (p: Record<string, unknown>) =>
+                                p.role === "patient"
+                            )
                             .map((p: Record<string, unknown>) => (
                               <option
                                 key={p._id || p.uid}
