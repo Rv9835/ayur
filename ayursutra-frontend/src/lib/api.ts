@@ -167,12 +167,31 @@ export async function getPatientAppointments(
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch appointments: ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return empty appointments for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning empty appointments for demo mode");
+        return [];
+      }
+      
+      throw new Error(`Failed to fetch appointments: ${res.status} - ${errorText}`);
     }
 
     return res.json();
   } catch (error: unknown) {
     console.error("Error fetching appointments:", error);
+    
+    // Return empty appointments for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning empty appointments for demo mode");
+      return [];
+    }
+    
     throw error;
   }
 }
@@ -252,15 +271,44 @@ export async function updateAppointmentStatus(
 export async function getAllAppointments(token: string) {
   const apiBase =
     process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
-  const res = await fetch(`${apiBase}/api/schedule`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) throw new Error(`Failed to fetch appointments: ${res.status}`);
-  return res.json();
+  
+  try {
+    const res = await fetch(`${apiBase}/api/schedule`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return empty appointments for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning empty appointments for demo mode");
+        return [];
+      }
+      
+      throw new Error(`Failed to fetch appointments: ${res.status} - ${errorText}`);
+    }
+    
+    return res.json();
+  } catch (error: unknown) {
+    console.error("Error fetching all appointments:", error);
+    
+    // Return empty appointments for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning empty appointments for demo mode");
+      return [];
+    }
+    
+    throw error;
+  }
 }
 
 export async function updateAppointment(
@@ -395,15 +443,44 @@ export async function listUsers(token: string, role?: string, query?: string) {
   const url = new URL(`${apiBase}/api/users`);
   if (role) url.searchParams.set("role", role);
   if (query) url.searchParams.set("query", query);
-  const res = await fetch(url.toString(), {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    signal: AbortSignal.timeout(30000),
-  });
-  if (!res.ok) throw new Error(`Failed to list users: ${res.status}`);
-  return res.json();
+  
+  try {
+    const res = await fetch(url.toString(), {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(30000),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return empty users for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning empty users for demo mode");
+        return [];
+      }
+      
+      throw new Error(`Failed to list users: ${res.status} - ${errorText}`);
+    }
+    
+    return res.json();
+  } catch (error: unknown) {
+    console.error("Error listing users:", error);
+    
+    // Return empty users for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning empty users for demo mode");
+      return [];
+    }
+    
+    throw error;
+  }
 }
 
 export async function createUserAdmin(
