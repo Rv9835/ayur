@@ -460,7 +460,10 @@ export async function getCurrentUser(token: string) {
   return res.json();
 }
 
-export async function updateCurrentUser(data: Record<string, unknown>, token: string) {
+export async function updateCurrentUser(
+  data: Record<string, unknown>,
+  token: string
+) {
   const apiBase =
     process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
   const res = await fetch(`${apiBase}/api/users/me`, {
@@ -863,7 +866,7 @@ export async function getPatientNotifications(
       throw new Error(`Failed to fetch notifications: ${res.status}`);
     }
 
-    return res.json() as Promise<{ pre: Array<any>; post: Array<any> }>;
+    return res.json() as Promise<{ pre: Array<Record<string, unknown>>; post: Array<Record<string, unknown>> }>;
   } catch (error: unknown) {
     console.error("Error fetching notifications:", error);
     throw error;
@@ -889,7 +892,9 @@ export async function listMessageThreads(patientId: string, token?: string) {
     }
   );
   if (!res.ok) throw new Error(`Failed to load threads: ${res.status}`);
-  return res.json() as Promise<Array<{ chatId: string; doctor: Record<string, unknown> }>>;
+  return res.json() as Promise<
+    Array<{ chatId: string; doctor: Record<string, unknown> }>
+  >;
 }
 
 export async function listChatMessages(
@@ -945,7 +950,10 @@ export async function sendChatMessage(
     }
   );
   if (!res.ok) throw new Error(`Failed to send message: ${res.status}`);
-  return res.json() as Promise<{ chatId: string; messages: Record<string, unknown>[] }>;
+  return res.json() as Promise<{
+    chatId: string;
+    messages: Record<string, unknown>[];
+  }>;
 }
 
 // Doctor-Admin thread for a given doctor (uid or id)
@@ -980,5 +988,7 @@ export async function listDoctorThreads(doctorId: string, token: string) {
     }
   );
   if (!res.ok) throw new Error(`Failed to load doctor threads: ${res.status}`);
-  return res.json() as Promise<Array<{ chatId: string; patient: Record<string, unknown> }>>;
+  return res.json() as Promise<
+    Array<{ chatId: string; patient: Record<string, unknown> }>
+  >;
 }

@@ -19,17 +19,17 @@ import {
 
 export default function AdminMessagesPage() {
   const { uid, token } = useAuthStore();
-  const [doctors, setDoctors] = useState<Array<any>>([]);
-  const [selectedDoctorUid, setSelectedDoctorUid] = useState<string>("");
+  const [doctors, setDoctors] = useState<Array<Record<string, unknown>>>([]);
+  const [selectedDoctorUid] = useState<string>("");
   const selectedDoctor = useMemo(
     () =>
       doctors.find(
-        (d: any) => String(d.uid || d._id) === String(selectedDoctorUid)
+        (d: Record<string, unknown>) => String(d.uid || d._id) === String(selectedDoctorUid)
       ),
     [doctors, selectedDoctorUid]
   );
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<any>>([]);
+  const [messages, setMessages] = useState<Array<Record<string, unknown>>>([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,11 +51,11 @@ export default function AdminMessagesPage() {
     try {
       const docs = await getDoctors(token);
       const approved = (docs || []).filter(
-        (d: any) => d.role === "doctor" && d.isApproved !== false
+        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved !== false
       );
       setDoctors(approved);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load doctors");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load doctors");
     } finally {
       setLoadingDoctors(false);
     }
@@ -74,7 +74,7 @@ export default function AdminMessagesPage() {
       // mark unread as read
       setUnreadByChat((prev) => ({ ...prev, [t.chatId]: 0 }));
       setTimeout(scrollToBottom, 0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMessages([]);
       setError(err?.message || "Failed to open chat");
     } finally {
@@ -90,8 +90,8 @@ export default function AdminMessagesPage() {
       const res = await listChatMessages(chatId, token);
       setMessages(res.messages || []);
       setTimeout(scrollToBottom, 0);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load messages");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to load messages");
     } finally {
       setLoadingMessages(false);
     }
@@ -114,8 +114,8 @@ export default function AdminMessagesPage() {
       setText("");
       setAttachmentUrl("");
       setTimeout(scrollToBottom, 0);
-    } catch (err: any) {
-      setError(err?.message || "Failed to send message");
+    } catch (err: unknown) {
+      setError((err as Error)?.message || "Failed to send message");
     }
   }
 
@@ -147,7 +147,7 @@ export default function AdminMessagesPage() {
       } catch {}
     });
     return () => es.close();
-  }, [token, activeChatId]);
+  }, [token, activeChatId, loadMessages]);
 
   // Derived: filtered doctors by search query
   const filteredDoctors = useMemo(() => {
@@ -194,7 +194,7 @@ export default function AdminMessagesPage() {
                         No doctors found.
                       </div>
                     ) : (
-                      filteredDoctors.map((d: any) => {
+                      filteredDoctors.map((d: Record<string, unknown>) => {
                         const did = String(d.uid || d._id);
                         const unread = Object.values(unreadByChat)[0];
                         return (
@@ -250,7 +250,7 @@ export default function AdminMessagesPage() {
                       No messages yet.
                     </div>
                   ) : (
-                    (messages || []).map((m: any, i: number) => (
+                    (messages || []).map((m: Record<string, unknown>, i: number) => (
                       <div
                         key={m?._id || m?.id || m?.createdAt || i}
                         className="flex items-start gap-2"

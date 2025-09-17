@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     const model = "models/gemini-2.0-flash";
 
-    const contents = [] as any[];
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
     if (system) {
       contents.push({ role: "user", parts: [{ text: `SYSTEM:\n${system}` }] });
     }
@@ -61,10 +61,10 @@ export async function POST(req: NextRequest) {
     const data = await resp.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     return NextResponse.json({ text });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("/api/ai/chat error:", e);
     return NextResponse.json(
-      { error: e?.message || "Failed to call Gemini" },
+      { error: (e as Error)?.message || "Failed to call Gemini" },
       { status: 500 }
     );
   }

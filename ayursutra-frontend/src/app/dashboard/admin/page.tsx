@@ -241,11 +241,11 @@ export default function AdminDashboard() {
     try {
       const docs = await getDoctors(token);
       const pending = (docs || []).filter(
-        (d: any) => d.role === "doctor" && d.isApproved === false
+        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved === false
       );
       setPendingDoctors(pending);
       const approved = (docs || []).filter(
-        (d: any) => d.role === "doctor" && d.isApproved !== false
+        (d: Record<string, unknown>) => d.role === "doctor" && d.isApproved !== false
       );
       setApprovedDoctors(approved);
     } catch (e) {
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  function formatEntityForDisplay(entity: any): string {
+  function formatEntityForDisplay(entity: Record<string, unknown>): string {
     if (!entity) return "Unknown";
     if (typeof entity === "string") return entity;
     if (typeof entity === "number") return String(entity);
@@ -529,7 +529,7 @@ export default function AdminDashboard() {
         listUsers(token),
       ]);
       setAdmins(adminUsers || []);
-      setNonAdmins((allUsers || []).filter((u: any) => u.role !== "admin"));
+      setNonAdmins((allUsers || []).filter((u: Record<string, unknown>) => u.role !== "admin"));
     } catch (e) {
       toast.error("Failed to load role data");
     } finally {
@@ -1048,7 +1048,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {pendingDoctors.map((doc: any) => (
+                      {pendingDoctors.map((doc: Record<string, unknown>) => (
                         <div
                           key={doc._id || doc.uid || doc.email}
                           className="flex items-center justify-between p-4 border rounded-lg"
@@ -1215,7 +1215,7 @@ export default function AdminDashboard() {
                             type="checkbox"
                             checked={(patientForm as any).isApproved || false}
                             onChange={(e) =>
-                              setPatientForm((f: any) => ({
+                              setPatientForm((f: Record<string, unknown>) => ({
                                 ...f,
                                 isApproved: e.target.checked,
                               }))
@@ -1284,7 +1284,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {patients.map((p: any) => {
+                      {patients.map((p: Record<string, unknown>) => {
                         const isSuper =
                           (p.email || "").toLowerCase() ===
                           SUPER_ADMIN_EMAIL.toLowerCase();
@@ -1406,8 +1406,8 @@ export default function AdminDashboard() {
                         >
                           <option value="">Select patient (UID or ID)</option>
                           {patients
-                            .filter((p: any) => p.role === "patient")
-                            .map((p: any) => (
+                            .filter((p: Record<string, unknown>) => p.role === "patient")
+                            .map((p: Record<string, unknown>) => (
                               <option
                                 key={p._id || p.uid}
                                 value={p.uid || p._id}
@@ -1427,7 +1427,7 @@ export default function AdminDashboard() {
                           }
                         >
                           <option value="">Select doctor</option>
-                          {doctorsList.map((d: any) => (
+                          {doctorsList.map((d: Record<string, unknown>) => (
                             <option key={d._id || d.uid} value={d.uid || d._id}>
                               {d.name || d.email}
                             </option>
@@ -1444,7 +1444,7 @@ export default function AdminDashboard() {
                           }
                         >
                           <option value="">Select therapy</option>
-                          {therapiesList.map((t: any) => (
+                          {therapiesList.map((t: Record<string, unknown>) => (
                             <option key={t._id} value={t._id}>
                               {t.name}
                             </option>
@@ -1545,7 +1545,7 @@ export default function AdminDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {sessions.map((s: any) => (
+                      {sessions.map((s: Record<string, unknown>) => (
                         <div
                           key={s._id || s.id}
                           className="p-3 border rounded flex flex-col md:flex-row md:items-center md:justify-between gap-3"
@@ -2237,7 +2237,7 @@ export default function AdminDashboard() {
               <Badge variant="secondary">
                 {
                   (sessions || []).filter(
-                    (s: any) =>
+                    (s: Record<string, unknown>) =>
                       s.status === "delayed" || s.status === "in_progress"
                   ).length
                 }
@@ -2263,7 +2263,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {pendingDoctors.map((doc: any) => (
+                  {pendingDoctors.map((doc: Record<string, unknown>) => (
                     <div
                       key={doc._id || doc.uid || doc.email}
                       className="flex items-center justify-between p-2 border rounded"
