@@ -46,5 +46,7 @@
     "resolveJsonModule": true,
     "moduleResolution": "node10",
     "noImplicitAny": false
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "api", "scripts"]
 }
