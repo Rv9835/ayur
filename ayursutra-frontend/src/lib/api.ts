@@ -356,13 +356,18 @@ export async function getDoctors(token?: string) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return empty array for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning empty doctors list for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning empty doctors list for demo mode"
+        );
         return [];
       }
-      
+
       throw new Error(`Failed to fetch doctors: ${res.status} - ${errorText}`);
     }
 
@@ -463,15 +468,54 @@ export async function deleteUserAdmin(id: string, token: string) {
 export async function getCurrentUser(token: string) {
   const apiBase =
     process.env.NEXT_PUBLIC_API_BASE || "https://ayur-api.vercel.app";
-  const res = await fetch(`${apiBase}/api/users/me`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!res.ok) throw new Error(`Failed to fetch current user: ${res.status}`);
-  return res.json();
+  
+  try {
+    const res = await fetch(`${apiBase}/api/users/me`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(10000),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return a demo user for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning demo user for demo mode");
+        return {
+          _id: "demo-user-123",
+          displayName: "Demo User",
+          email: "demo@example.com",
+          role: "patient"
+        };
+      }
+      
+      throw new Error(`Failed to fetch current user: ${res.status} - ${errorText}`);
+    }
+    
+    return res.json();
+  } catch (error: unknown) {
+    console.error("Error fetching current user:", error);
+    
+    // Return demo user for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning demo user for demo mode");
+      return {
+        _id: "demo-user-123",
+        displayName: "Demo User",
+        email: "demo@example.com",
+        role: "patient"
+      };
+    }
+    
+    throw error;
+  }
 }
 
 export async function updateCurrentUser(
@@ -639,13 +683,18 @@ export async function getTherapies(token?: string) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return empty array for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning empty therapies list for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning empty therapies list for demo mode"
+        );
         return [];
       }
-      
+
       throw new Error(
         `Failed to fetch therapies: ${res.status} - ${errorText}`
       );
@@ -934,13 +983,18 @@ export async function listMessageThreads(patientId: string, token?: string) {
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Backend error ${res.status}:`, errorText);
-      
+
       // If it's a token error, return empty array for demo mode
-      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
-        console.warn("Backend requires valid authentication, returning empty threads list for demo mode");
+      if (
+        errorText.includes("Invalid token") ||
+        errorText.includes("Missing token")
+      ) {
+        console.warn(
+          "Backend requires valid authentication, returning empty threads list for demo mode"
+        );
         return [];
       }
-      
+
       throw new Error(`Failed to load threads: ${res.status} - ${errorText}`);
     }
 
@@ -974,22 +1028,58 @@ export async function listChatMessages(
   const authHeaders = getAuthHeader(token, uidFallback);
   console.log("Auth headers for chat messages:", authHeaders);
 
-  const res = await fetch(
-    `${apiBase}/api/messages/threads/${chatId}/messages`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      signal: AbortSignal.timeout(10000),
+  try {
+    const res = await fetch(
+      `${apiBase}/api/messages/threads/${chatId}/messages`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return empty messages for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning empty messages for demo mode");
+        return {
+          chatId,
+          participants: [],
+          messages: []
+        };
+      }
+      
+      throw new Error(`Failed to load messages: ${res.status} - ${errorText}`);
     }
-  );
-  if (!res.ok) throw new Error(`Failed to load messages: ${res.status}`);
-  return res.json() as Promise<{
-    chatId: string;
-    participants: Record<string, unknown>[];
-    messages: Record<string, unknown>[];
-  }>;
+    
+    return res.json() as Promise<{
+      chatId: string;
+      participants: Record<string, unknown>[];
+      messages: Record<string, unknown>[];
+    }>;
+  } catch (error: unknown) {
+    console.error("Error loading chat messages:", error);
+    
+    // Return empty messages for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning empty messages for demo mode");
+      return {
+        chatId,
+        participants: [],
+        messages: []
+      };
+    }
+    
+    throw error;
+  }
 }
 
 export async function sendChatMessage(
@@ -1003,23 +1093,69 @@ export async function sendChatMessage(
   const authHeaders = getAuthHeader(token, data.senderId);
   console.log("Auth headers for sending message:", authHeaders);
 
-  const res = await fetch(
-    `${apiBase}/api/messages/threads/${chatId}/messages`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authHeaders,
-      },
-      body: JSON.stringify(data),
-      signal: AbortSignal.timeout(10000),
+  try {
+    const res = await fetch(
+      `${apiBase}/api/messages/threads/${chatId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
+        body: JSON.stringify(data),
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`Backend error ${res.status}:`, errorText);
+      
+      // If it's a token error, return a mock response for demo mode
+      if (errorText.includes("Invalid token") || errorText.includes("Missing token")) {
+        console.warn("Backend requires valid authentication, returning mock message for demo mode");
+        return {
+          chatId,
+          messages: [{
+            _id: `demo-msg-${Date.now()}`,
+            text: data.text || "Demo message",
+            senderId: data.senderId,
+            createdAt: new Date().toISOString(),
+            isDemo: true
+          }]
+        };
+      }
+      
+      throw new Error(`Failed to send message: ${res.status} - ${errorText}`);
     }
-  );
-  if (!res.ok) throw new Error(`Failed to send message: ${res.status}`);
-  return res.json() as Promise<{
-    chatId: string;
-    messages: Record<string, unknown>[];
-  }>;
+    
+    return res.json() as Promise<{
+      chatId: string;
+      messages: Record<string, unknown>[];
+    }>;
+  } catch (error: unknown) {
+    console.error("Error sending message:", error);
+    
+    // Return mock response for demo mode when backend is down
+    if (
+      error.message?.includes("Failed to fetch") ||
+      error.message?.includes("500")
+    ) {
+      console.warn("Backend unavailable, returning mock message for demo mode");
+      return {
+        chatId,
+        messages: [{
+          _id: `demo-msg-${Date.now()}`,
+          text: data.text || "Demo message",
+          senderId: data.senderId,
+          createdAt: new Date().toISOString(),
+          isDemo: true
+        }]
+      };
+    }
+    
+    throw error;
+  }
 }
 
 // Doctor-Admin thread for a given doctor (uid or id)
