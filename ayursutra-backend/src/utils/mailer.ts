@@ -138,4 +138,4 @@ export function buildFeedbackEmail(params: {
   <a href="${feedbackLink}">${feedbackLink}</a></p>
   <p>Thank you,<br/>AyurSutra Clinic</p>`;
   return { subject, text, html };
-}
+}//
